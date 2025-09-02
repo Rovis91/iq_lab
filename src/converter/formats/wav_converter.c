@@ -67,12 +67,14 @@ static uint64_t read_u64_le(const uint8_t *data) {
 }
 
 // Utility function to write little-endian integers
+/*
 static void write_u32_le(uint8_t *data, uint32_t value) {
     data[0] = (uint8_t)(value & 0xFF);
     data[1] = (uint8_t)((value >> 8) & 0xFF);
     data[2] = (uint8_t)((value >> 16) & 0xFF);
     data[3] = (uint8_t)((value >> 24) & 0xFF);
 }
+*/
 
 // WAV reader functions (moved from io_wav.c)
 bool wav_reader_open(wav_reader_t *reader, const char *filename) {
@@ -331,6 +333,43 @@ bool wav_can_handle(const char *filename) {
     return false;
 }
 
+static bool wav_validate_header(const wav_header_t *header, char *error_message, size_t max_length) {
+    // Basic checks
+    if (header->format != 1) {
+        // We still accept non-PCM formats because some IQ files have corrupted headers
+        if (error_message) {
+            snprintf(error_message, max_length,
+                    "Unusual audio format: %d (normally 1 for PCM)", header->format);
+        }
+        // Continue anyway
+    }
+
+    if (header->bits_per_sample != 16) {
+        if (error_message) {
+            snprintf(error_message, max_length,
+                    "Unsupported resolution: %d bits (16 bits expected)", header->bits_per_sample);
+        }
+        return false;
+    }
+
+    if (header->channels < 1 || header->channels > 2) {
+        if (error_message) {
+            snprintf(error_message, max_length,
+                    "Nombre de canaux invalide: %d (1 ou 2 attendus)", header->channels);
+        }
+        return false;
+    }
+
+    if (header->sample_rate == 0) {
+        if (error_message) {
+            snprintf(error_message, max_length, "Fréquence d'échantillonnage invalide");
+        }
+        return false;
+    }
+
+    return true;
+}
+
 converter_result_t wav_to_iq(const conversion_request_t *request) {
     converter_result_t result = {0};
     clock_t start_time = clock();
@@ -490,6 +529,9 @@ converter_result_t wav_to_iq(const conversion_request_t *request) {
 converter_result_t iq_to_wav(const conversion_request_t *request) {
     converter_result_t result = {0};
 
+    // Suppress unused parameter warning
+    (void)request;
+
     // Not implemented yet
     snprintf(result.error_message, sizeof(result.error_message),
             "IQ to WAV conversion not implemented yet");
@@ -526,44 +568,9 @@ bool wav_extract_metadata(const char *filename, file_metadata_t *metadata) {
     return true;
 }
 
-// Internal utility functions
-static bool wav_validate_header(const wav_header_t *header, char *error_message, size_t max_length) {
-    // Basic checks
-    if (header->format != 1) {
-        // We still accept non-PCM formats because some IQ files have corrupted headers
-        if (error_message) {
-            snprintf(error_message, max_length,
-                    "Unusual audio format: %d (normally 1 for PCM)", header->format);
-        }
-        // Continue anyway
-    }
+// Internal utility functions (moved to before wav_to_iq function)
 
-    if (header->bits_per_sample != 16) {
-        if (error_message) {
-            snprintf(error_message, max_length,
-                    "Unsupported resolution: %d bits (16 bits expected)", header->bits_per_sample);
-        }
-        return false;
-    }
-
-    if (header->channels < 1 || header->channels > 2) {
-        if (error_message) {
-            snprintf(error_message, max_length,
-                    "Nombre de canaux invalide: %d (1 ou 2 attendus)", header->channels);
-        }
-        return false;
-    }
-
-    if (header->sample_rate == 0) {
-        if (error_message) {
-            snprintf(error_message, max_length, "Fréquence d'échantillonnage invalide");
-        }
-        return false;
-    }
-
-    return true;
-}
-
+/*
 static size_t wav_estimate_samples(const wav_header_t *header) {
     if (header->bits_per_sample == 0 || header->channels == 0) {
         return 0;
@@ -571,7 +578,9 @@ static size_t wav_estimate_samples(const wav_header_t *header) {
 
     return header->data_size / (header->channels * header->bits_per_sample / 8);
 }
+*/
 
+/*
 static double wav_calculate_duration(const wav_header_t *header) {
     if (header->sample_rate == 0) {
         return 0.0;
@@ -580,3 +589,4 @@ static double wav_calculate_duration(const wav_header_t *header) {
     size_t samples = wav_estimate_samples(header);
     return (double)samples / (double)header->sample_rate;
 }
+*/

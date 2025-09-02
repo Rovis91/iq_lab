@@ -117,6 +117,7 @@ bool iq_extract_metadata(const char *filename, file_metadata_t *metadata) {
 }
 
 // Internal utility functions
+/*
 static bool iq_converter_detect_format(const char *filename, file_format_t *format) {
     if (!filename || !format) return false;
 
@@ -143,8 +144,11 @@ static bool iq_converter_detect_format(const char *filename, file_format_t *form
     *format = FORMAT_AUTO;
     return false;
 }
+*/
 
+/*
 static size_t iq_estimate_file_size(size_t num_samples, file_format_t format) {
     size_t bytes_per_sample = (format == FORMAT_IQ_S8) ? 2 : 4;
     return num_samples * bytes_per_sample;
 }
+*/

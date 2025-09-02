@@ -10,7 +10,10 @@ SRC_DIRS = src/iq_core src/viz src/demod src/detect src/chan src/jobs
 BUILD_DIR = build
 
 # Core library objects (IQ-only)
-CORE_OBJS = build/io_iq.o
+CORE_OBJS = build/io_iq.o \
+            build/io_sigmf.o \
+            build/fft.o \
+            build/window.o
 
 # Converter objects
 CONVERTER_OBJS = build/converter.o \
@@ -30,6 +33,15 @@ dirs:
 
 # Core library compilation
 build/io_iq.o: src/iq_core/io_iq.c src/iq_core/io_iq.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/io_sigmf.o: src/iq_core/io_sigmf.c src/iq_core/io_sigmf.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/fft.o: src/iq_core/fft.c src/iq_core/fft.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/window.o: src/iq_core/window.c src/iq_core/window.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 

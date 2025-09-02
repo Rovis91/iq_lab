@@ -17,8 +17,6 @@ converter_result_t iq_to_iq(const conversion_request_t *request);
 // Extract metadata from native IQ file
 bool iq_extract_metadata(const char *filename, file_metadata_t *metadata);
 
-// Internal utility functions
-static bool iq_converter_detect_format(const char *filename, file_format_t *format);
-static size_t iq_estimate_file_size(size_t num_samples, file_format_t format);
+// Internal utility functions (defined in iq_converter.c)
 
 #endif // IQ_IQ_CONVERTER_H

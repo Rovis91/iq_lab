@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include <math.h>
 #include "../src/iq_core/io_iq.h"
+#include "../src/iq_core/io_sigmf.h"
 
 // Command line arguments structure
 typedef struct {
@@ -144,11 +145,8 @@ double rms_to_dbfs(double rms) {
 int process_iq_file(const iqinfo_args_t *args) {
     iq_data_t iq_data = {0};
 
-    // Determine format
-    iq_format_t format = IQ_FORMAT_S8;
-    if (strcmp(args->format_str, "s16") == 0) {
-        format = IQ_FORMAT_S16;
-    }
+    // Format will be auto-detected by iq_load_file
+    // The --format argument is kept for future compatibility
 
     if (args->verbose) {
         printf("Loading IQ file: %s (format: %s, rate: %u Hz)\n",
@@ -180,6 +178,31 @@ int process_iq_file(const iqinfo_args_t *args) {
 
     double duration_s = (double)iq_data.num_samples / (double)args->sample_rate;
 
+    // Try to load SigMF metadata if available
+    sigmf_metadata_t sigmf_meta = {0};
+    bool has_sigmf = false;
+
+    if (sigmf_meta_file_exists(args->input_file)) {
+        if (args->verbose) {
+            char meta_filename[512];
+            sigmf_get_meta_filename(args->input_file, meta_filename, sizeof(meta_filename));
+            printf("Loading SigMF metadata: %s\n", meta_filename);
+        }
+
+        has_sigmf = sigmf_read_metadata(args->input_file, &sigmf_meta);
+
+        if (has_sigmf && args->verbose) {
+            printf("SigMF metadata loaded successfully\n");
+            printf("  Version: %s\n", sigmf_meta.global.version);
+            printf("  Datatype: %s\n", sigmf_meta.global.datatype);
+            printf("  Sample rate: %llu Hz\n", sigmf_meta.global.sample_rate);
+            printf("  Center frequency: %llu Hz\n", sigmf_meta.global.frequency);
+            printf("  Description: %s\n", sigmf_meta.global.description);
+            printf("  Author: %s\n", sigmf_meta.global.author);
+            printf("  Captures: %zu\n", sigmf_meta.num_captures);
+        }
+    }
+
     // Output JSON result
     printf("{\n");
     printf("  \"input_file\": \"%s\",\n", args->input_file);
@@ -190,10 +213,28 @@ int process_iq_file(const iqinfo_args_t *args) {
     printf("  \"rms_dBFS\": %.2f,\n", rms_dbfs);
     printf("  \"dc_offset_I\": %.6f,\n", dc_i);
     printf("  \"dc_offset_Q\": %.6f,\n", dc_q);
-    printf("  \"estimated_noise_floor_dBFS\": %.2f\n", rms_dbfs - 10.0); // Rough estimate
+    printf("  \"estimated_noise_floor_dBFS\": %.2f,\n", rms_dbfs - 10.0); // Rough estimate
+
+    // Add SigMF metadata to JSON output
+    if (has_sigmf) {
+        printf("  \"sigmf_metadata\": {\n");
+        printf("    \"version\": \"%s\",\n", sigmf_meta.global.version);
+        printf("    \"datatype\": \"%s\",\n", sigmf_meta.global.datatype);
+        printf("    \"sample_rate\": %llu,\n", sigmf_meta.global.sample_rate);
+        printf("    \"frequency\": %llu,\n", sigmf_meta.global.frequency);
+        printf("    \"description\": \"%s\",\n", sigmf_meta.global.description);
+        printf("    \"author\": \"%s\",\n", sigmf_meta.global.author);
+        printf("    \"datetime\": \"%s\",\n", sigmf_meta.global.datetime);
+        printf("    \"num_captures\": %zu,\n", sigmf_meta.num_captures);
+        printf("    \"num_annotations\": %zu\n", sigmf_meta.num_annotations);
+        printf("  },\n");
+    }
+
+    printf("  \"sigmf_available\": %s\n", has_sigmf ? "true" : "false");
     printf("}\n");
 
     // Cleanup
+    sigmf_free_metadata(&sigmf_meta);
     iq_free(&iq_data);
 
     return EXIT_SUCCESS;

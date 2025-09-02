@@ -9,7 +9,6 @@
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(path, mode) _mkdir(path)
-#define S_IRWXU 0777
 #endif
 
 bool file_copy(const char *source_path, const char *dest_path) {

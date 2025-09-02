@@ -120,6 +120,58 @@ make clean        # Clean build artifacts
 make install      # Install to system (optional)
 ```
 
+## 🧪 Testing
+
+IQ Lab includes a comprehensive test suite to ensure code quality and mathematical accuracy.
+
+### Running Tests
+
+```bash
+# Build and run all tests
+./tests/run_tests.exe --build
+./tests/run_tests.exe --run
+
+# Or run individual test suites
+./tests/unit/test_sigmf.exe       # SigMF metadata tests
+./tests/unit/test_fft.exe         # FFT algorithm tests
+./tests/unit/test_window.exe      # Window function tests
+./tests/integration/test_pipeline.exe  # Complete pipeline tests
+```
+
+### Test Coverage
+
+- **SigMF Tests**: Metadata I/O, parsing, validation, edge cases
+- **FFT Tests**: Mathematical accuracy, reconstruction, frequency detection
+- **Window Tests**: All 6 window types, coefficient accuracy, application
+- **Integration Tests**: Complete signal processing pipeline validation
+
+### Test Results
+
+Expected successful test run:
+```
+========================================
+IQ Lab - Complete Test Suite
+========================================
+
+🎉 All tests PASSED!
+✅ Complete signal processing pipeline validated
+```
+
+### Test Documentation
+
+See `tests/README.md` for detailed test documentation including:
+- Test structure and organization
+- Coverage metrics and edge cases
+- Performance benchmarks
+- Debugging failed tests
+- Adding new tests
+
+### Quality Metrics
+
+- **Mathematical Accuracy**: FFT reconstruction error < 1e-12
+- **Edge Case Coverage**: Division by zero, invalid inputs, memory limits
+- **Performance**: Real-time FFT processing capability
+- **Integration**: Complete SigMF → FFT → Window pipeline validation
 
 ## 📄 License
 
