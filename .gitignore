@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+*.o
+*.exe
+*.out
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Test data (keep test.iq for basic testing)
+data/
+
+# Documentation builds
+docs/
+.cursor/
