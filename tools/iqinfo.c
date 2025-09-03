@@ -1,3 +1,57 @@
+/*
+ * =============================================================================
+ * IQ Lab - IQ File Information Tool
+ * =============================================================================
+ *
+ * PURPOSE:
+ *   Analyzes IQ (In-phase/Quadrature) data files and provides comprehensive
+ *   statistics including RMS power, DC offset, duration, and metadata.
+ *   Supports SigMF metadata for enhanced SDR recording analysis.
+ *
+ * INPUTS:
+ *   - IQ data file: Raw IQ files (s8/s16) or WAV IQ recordings
+ *   - Format specification: 's8' (8-bit) or 's16' (16-bit) IQ data
+ *   - Sample rate: Sampling frequency in Hz (required)
+ *   - Optional SigMF metadata: JSON sidecar file (.sigmf-meta)
+ *
+ * OUTPUTS:
+ *   - JSON statistics report containing:
+ *     * File information (format, sample rate, duration)
+ *     * Signal statistics (RMS power in dBFS, DC offset I/Q)
+ *     * Noise floor estimation
+ *     * SigMF metadata (if available)
+ *
+ * USAGE:
+ *   ./iqinfo --in <input_file> --format {s8|s16} --rate <Hz> [--meta <meta_file>] [--verbose]
+ *
+ *   ARGUMENTS:
+ *     --in <file>        : Input IQ file path (required)
+ *     --format {s8|s16}  : IQ data format (required)
+ *     --rate <Hz>        : Sample rate in Hz (required)
+ *     --meta <file>      : SigMF metadata file (optional)
+ *     --verbose          : Enable verbose output (optional)
+ *     --help             : Show help message
+ *
+ * EXAMPLES:
+ *   # Basic analysis of 16-bit IQ file at 2.4 Msps
+ *   ./iqinfo --in capture.iq --format s16 --rate 2400000
+ *
+ *   # Analysis with SigMF metadata
+ *   ./iqinfo --in kiwi_recording.iq.wav --format s16 --rate 12000 --meta kiwi_recording.iq.sigmf-meta
+ *
+ *   # Verbose analysis with detailed progress
+ *   ./iqinfo --in capture.iq --format s8 --rate 1000000 --verbose
+ *
+ * FEATURES:
+ *   - Automatic SigMF metadata detection and parsing
+ *   - RMS power calculation (dBFS - decibels relative to full scale)
+ *   - DC offset measurement for I and Q components
+ *   - JSON output format for easy integration
+ *   - Support for large files with efficient processing
+ *
+ * =============================================================================
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

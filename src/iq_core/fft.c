@@ -240,6 +240,45 @@ bool fft_power_spectrum(const fft_complex_t *fft_output, double *power_spectrum,
     return true;
 }
 
+// FFT shift: move DC component to center of spectrum
+// This makes negative frequencies appear on the left, DC in middle, positive on right
+bool fft_shift(const fft_complex_t *input, fft_complex_t *output, uint32_t size) {
+    if (!input || !output || size == 0 || size % 2 != 0) return false;
+
+    uint32_t half_size = size / 2;
+
+    // Copy second half to beginning of output (negative frequencies)
+    for (uint32_t i = 0; i < half_size; i++) {
+        output[i] = input[i + half_size];
+    }
+
+    // Copy first half to end of output (positive frequencies + DC)
+    for (uint32_t i = 0; i < half_size; i++) {
+        output[i + half_size] = input[i];
+    }
+
+    return true;
+}
+
+// FFT shift for real arrays (power spectrum)
+bool fft_shift_real(const double *input, double *output, uint32_t size) {
+    if (!input || !output || size == 0 || size % 2 != 0) return false;
+
+    uint32_t half_size = size / 2;
+
+    // Copy second half to beginning of output (negative frequencies)
+    for (uint32_t i = 0; i < half_size; i++) {
+        output[i] = input[i + half_size];
+    }
+
+    // Copy first half to end of output (positive frequencies + DC)
+    for (uint32_t i = 0; i < half_size; i++) {
+        output[i + half_size] = input[i];
+    }
+
+    return true;
+}
+
 // Convert IQ samples to complex format
 void fft_iq_to_complex(const float *iq_data, fft_complex_t *complex_data,
                       uint32_t num_samples, bool scale_to_unit) {

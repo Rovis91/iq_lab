@@ -1,3 +1,72 @@
+/*
+ * =============================================================================
+ * IQ Lab - Universal File Converter Tool
+ * =============================================================================
+ *
+ * PURPOSE:
+ *   Converts between various IQ (In-phase/Quadrature) file formats for SDR
+ *   data interchange and compatibility. Supports automatic format detection,
+ *   batch processing, and memory-efficient conversion of large files.
+ *
+ * INPUT FORMATS:
+ *   - auto     : Automatic format detection from file extension/content
+ *   - iq_s8    : Native IQ 8-bit (signed char, interleaved I,Q)
+ *   - iq_s16   : Native IQ 16-bit (signed short, interleaved I,Q)
+ *   - wav      : WAV IQ format (RIFF/RF64 containers)
+ *   - sigmf    : SigMF format with metadata sidecar
+ *   - hdf5     : HDF5 scientific data format
+ *
+ * OUTPUT FORMATS:
+ *   - iq_s8    : Native IQ 8-bit format
+ *   - iq_s16   : Native IQ 16-bit format (default)
+ *
+ * USAGE:
+ *   ./file_converter [OPTIONS] <input_file> <output_file>
+ *
+ *   BASIC ARGUMENTS:
+ *     <input_file>     : Source file path (required)
+ *     <output_file>    : Destination file path (required)
+ *
+ *   OPTIONS:
+ *     -f, --from <format>    : Source format (auto, iq_s8, iq_s16, wav)
+ *     -t, --to <format>      : Destination format (iq_s8, iq_s16)
+ *     -r, --rate <Hz>        : Force sample rate override
+ *     --force                : Overwrite destination if exists
+ *     -v, --verbose          : Enable detailed progress reporting
+ *     -h, --help             : Show help message
+ *
+ * EXAMPLES:
+ *   # Automatic conversion (recommended)
+ *   ./file_converter capture.wav capture.iq
+ *
+ *   # Explicit WAV to 16-bit IQ conversion
+ *   ./file_converter -f wav -t iq_s16 kiwi_recording.wav output.iq
+ *
+ *   # Convert with forced sample rate
+ *   ./file_converter -r 2000000 mystery_file.dat output.iq
+ *
+ *   # Batch conversion with verbose output
+ *   ./file_converter -v -f auto recording.wav processed.iq
+ *
+ *   # Force overwrite existing output
+ *   ./file_converter --force input.wav output.iq
+ *
+ * FEATURES:
+ *   - Automatic format detection from file signatures
+ *   - Memory-efficient block processing for large files
+ *   - Progress reporting with throughput statistics
+ *   - Comprehensive error handling and validation
+ *   - Support for various IQ data representations
+ *   - Sample rate preservation and override options
+ *
+ * PERFORMANCE:
+ *   - Block-based processing to minimize memory usage
+ *   - Throughput reporting in MB/s
+ *   - Optimized for both speed and memory efficiency
+ *
+ * =============================================================================
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>

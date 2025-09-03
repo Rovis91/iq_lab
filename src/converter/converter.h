@@ -98,4 +98,10 @@ void init_converter_options(converter_options_t *options);
  */
 bool validate_conversion_request(const conversion_request_t *request, char *error_message, size_t max_length);
 
+/*
+ * Check if a WAV file contains IQ data (public function for analysis)
+ * Returns true if IQ data is detected, false for regular audio
+ */
+bool is_wav_iq_format(const char *filename);
+
 #endif // IQ_CONVERTER_H

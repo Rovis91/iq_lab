@@ -72,6 +72,12 @@ double fft_magnitude_db(fft_complex_t c, double reference);
 bool fft_power_spectrum(const fft_complex_t *fft_output, double *power_spectrum,
                        uint32_t size, bool normalize);
 
+// FFT shift: move DC component to center of spectrum
+bool fft_shift(const fft_complex_t *input, fft_complex_t *output, uint32_t size);
+
+// FFT shift for real arrays (power spectrum)
+bool fft_shift_real(const double *input, double *output, uint32_t size);
+
 // Convert real IQ samples to complex format
 void fft_iq_to_complex(const float *iq_data, fft_complex_t *complex_data,
                       uint32_t num_samples, bool scale_to_unit);

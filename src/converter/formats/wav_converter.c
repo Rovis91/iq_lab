@@ -280,11 +280,12 @@ bool wav_analyze_header(const char *filename, wav_header_t *header) {
 }
 
 bool wav_is_iq_format(const wav_header_t *header) {
-    // Criteria for detecting WAV IQ file:
-    // 1. PCM format
-    // 2. 16 bits per sample (sufficient quality for IQ)
+    // Enhanced criteria for detecting WAV IQ file based on sample rate and data density:
+    // 1. PCM format (required)
+    // 2. 16 bits per sample (required for IQ quality)
     // 3. 1 or 2 channels (mono = interleaved IQ, stereo = separate I/Q)
-    // 4. Realistic sample rate for SDR (typically > 1 MHz for wide bands)
+    // 4. Sample rate analysis (SDR typical ranges)
+    // 5. Data density analysis (sample rate vs file size ratio)
 
     if (header->format != WAV_FORMAT_PCM) {
         return false;
@@ -298,13 +299,70 @@ bool wav_is_iq_format(const wav_header_t *header) {
         return false;
     }
 
-    // Typical sample rates for SDR
-    // Very low frequencies suggest regular audio
-    if (header->sample_rate < 100000) {  // Less than 100 kHz
-        return false;
+    // Very high sample rates strongly suggest IQ data
+    if (header->sample_rate >= 1000000) {  // >= 1 MHz definitely IQ
+        return true;
     }
 
-    return true;
+    // High sample rates (>= 500 kHz) - very likely IQ
+    if (header->sample_rate >= 500000) {
+        return true;
+    }
+
+    // Medium sample rates (100-500 kHz) - analyze data density
+    if (header->sample_rate >= 100000) {
+        // Calculate data efficiency: bytes per sample per channel
+        double data_per_sample_ratio = (double)header->data_size / (double)header->sample_rate;
+
+        // For reasonable recording lengths, IQ files will have higher data density
+        if (data_per_sample_ratio > 1000.0) { // More than ~1 second of data at this rate
+            return true;
+        }
+
+        // Large files at medium sample rates suggest IQ
+        if (header->data_size > 10000000) { // >10MB suggests IQ
+            return true;
+        }
+
+        // Default for medium sample rates: assume IQ for SDR context
+        return true;
+    }
+
+    // Lower sample rates (10-100 kHz) - use size-based heuristics
+    if (header->sample_rate >= 10000) {
+        // At lower sample rates, very large files suggest IQ data
+        if (header->data_size > 50000000) { // >50MB strongly suggests IQ
+            return true;
+        }
+
+        // Calculate data efficiency for lower rates
+        double data_per_sample_ratio = (double)header->data_size / (double)header->sample_rate;
+
+        // IQ files at lower rates still have higher data density than typical audio
+        if (data_per_sample_ratio > 5000.0 && header->sample_rate >= 50000) {
+            return true;
+        }
+
+        // Medium-sized files at borderline sample rates
+        if (header->data_size > 5000000 && header->sample_rate >= 25000) {
+            return true;
+        }
+
+        // Short recordings at lower sample rates could still be IQ test data
+        if (header->data_size > 25000 && header->sample_rate >= 10000) { // >25KB at >=10kHz (reasonable for test data)
+            if (data_per_sample_ratio > 2.0) { // At least 2 seconds of data
+                return true; // Could be IQ test data
+            }
+        }
+    }
+
+    // Very low sample rates - only extremely large files suggest IQ
+    if (header->data_size > 100000000) { // >100MB even at low rates
+        return true;
+    }
+
+    // Default: low sample rates suggest regular audio
+    return false;
 }
 
 bool wav_can_handle(const char *filename) {

@@ -26,6 +26,11 @@ IQ Lab processes raw IQ data files to produce auditable SIGINT artifacts:
 - **Make** build system
 - **Standard C libraries** (stdlib, math, etc.)
 
+#### Optional Prerequisites (for KiwiSDR recording)
+- **Python 3.6+** (for KiwiSDR recording tool only)
+- **mod_pywebsocket** (for KiwiSDR WebSocket connections)
+- **PyYAML** (optional, for advanced KiwiSDR configuration)
+
 ### Build
 ```bash
 # Clone and build
@@ -41,6 +46,9 @@ make all
 
 # Generate spectrum and waterfall
 ./iqls --in capture.iq --fft 4096 --hop 1024 --waterfall
+
+# Generate PNG spectrograms and waterfalls from IQ data
+./generate_images
 
 # Detect signals
 ./iqdetect --in capture.iq --pfa 1e-3 --min_dur_ms 50
@@ -70,6 +78,7 @@ iq_lab/
 - **`iqinfo`** - IQ file statistics and metadata
 - **`iqls`** - Spectrum analysis and waterfall generation
 - **`iqcut`** - Extract time/frequency segments
+- **`generate_images`** - Generate PNG spectrograms and waterfalls from IQ data
 
 ### Demodulation Tools (Phase 1)
 - **`iqdemod-fm`** - FM demodulation to audio
@@ -84,6 +93,21 @@ iq_lab/
 - **`iqtdoa`** - Time Difference of Arrival (TDoA) positioning
 - **`iqcal`** - Frequency calibration
 
+### 🎛️ Optional: KiwiSDR Recording Tool
+
+> **Note**: Optional script using external [kiwiclient](https://github.com/jks-prv/kiwiclient) project for capturing IQ data from KiwiSDR servers.
+
+- **`record_iq_from_kiwi.ps1`** - PowerShell script to record IQ data
+
+```powershell
+# Setup: Clone kiwiclient and install deps
+git clone https://github.com/jks-prv/kiwiclient.git ../kiwiclient
+pip install mod-pywebsocket pyyaml
+
+# Record from KiwiSDR (outputs .wav files)
+.\tools\record_iq_from_kiwi.ps1 -Server wessex.zapto.org -Freq 7100.0 -Duration 30
+```
+
 ## 📊 Input/Output Formats
 
 ### IQ Input Formats
@@ -93,7 +117,10 @@ iq_lab/
 - **Metadata**: SigMF JSON sidecar files (`.sigmf-meta`)
 
 ### Output Formats
-- **Images**: PNG/PPM spectrum and waterfall plots
+- **Images**: PNG spectrograms and waterfalls with calibrated axes
+  - Spectrograms: Frequency (x-axis) vs Power (y-axis in dB)
+  - Waterfalls: Frequency (x-axis) vs Time (y-axis, newest at top)
+  - Color-coded power levels with automatic scaling
 - **Audio**: WAV files (PCM16, mono, 48kHz default)
 - **Events**: CSV or JSONL structured event logs
 - **IQ Cutouts**: Extracted IQ segments with metadata

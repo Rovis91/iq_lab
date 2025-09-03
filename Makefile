@@ -15,6 +15,11 @@ CORE_OBJS = build/io_iq.o \
             build/fft.o \
             build/window.o
 
+# Visualization objects
+VIZ_OBJS = build/img_png.o \
+           build/img_ppm.o \
+           build/draw_axes.o
+
 # Converter objects
 CONVERTER_OBJS = build/converter.o \
                  build/wav_converter.o \
@@ -22,7 +27,7 @@ CONVERTER_OBJS = build/converter.o \
                  build/file_utils.o
 
 # Tool executables
-TOOLS = iqinfo file_converter
+TOOLS = iqinfo iqls file_converter
 
 # Default target
 all: dirs $(TOOLS)
@@ -45,6 +50,16 @@ build/window.o: src/iq_core/window.c src/iq_core/window.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
+# Visualization compilation
+build/img_png.o: src/viz/img_png.c src/viz/img_png.h src/viz/stb_image_write.h
+	$(CC) $(CFLAGS) -DSTB_IMAGE_WRITE_IMPLEMENTATION -c $< -o $@
+
+build/img_ppm.o: src/viz/img_ppm.c src/viz/img_ppm.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/draw_axes.o: src/viz/draw_axes.c src/viz/draw_axes.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 # Converter compilation
 build/converter.o: src/converter/converter.c src/converter/converter.h
@@ -61,6 +76,9 @@ build/file_utils.o: src/converter/utils/file_utils.c src/converter/utils/file_ut
 
 # Tool compilation
 iqinfo: tools/iqinfo.c $(CORE_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+iqls: tools/iqls.c $(CORE_OBJS) $(VIZ_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
 file_converter: tools/file_converter.c $(CORE_OBJS) $(CONVERTER_OBJS)
