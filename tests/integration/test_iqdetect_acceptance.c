@@ -66,7 +66,7 @@ static bool validate_project_requirements(void) {
     printf("  📋 Requirement 1: Process IQ files (s8/s16 formats)\n");
     char cmd1[512];
     snprintf(cmd1, sizeof(cmd1),
-             ".\\iqdetect --in requirements_test.iq --format s16 --rate %d --out req_test1.csv",
+             ".\\iqdetect --in requirements_test.iq --format s16 --rate %d --out req_test1.csv 2>iqdetect_error1.txt",
              TEST_SAMPLE_RATE);
 
     if (system(cmd1) != 0) {
@@ -111,7 +111,7 @@ static bool validate_project_requirements(void) {
     printf("  📋 Requirement 3: JSONL output format for processing pipelines\n");
     char cmd3[512];
     snprintf(cmd3, sizeof(cmd3),
-             ".\\iqdetect --in requirements_test.iq --format s16 --rate %d --format jsonl --out req_test3.jsonl",
+             ".\\iqdetect --in requirements_test.iq --format s16 --rate %d --output-format jsonl --out req_test3.jsonl",
              TEST_SAMPLE_RATE);
 
     if (system(cmd3) != 0) {
@@ -423,7 +423,7 @@ static bool validate_feature_completeness(void) {
     printf("  📋 Feature 2: Parameter handling and validation\n");
     char cmd[512];
     snprintf(cmd, sizeof(cmd),
-             ".\\iqdetect --in feature_test.iq --format s16 --rate %d --fft 2048 --hop 1024 --pfa 1e-4 --out feature_test.csv",
+             ".\\iqdetect --in feature_test.iq --format s16 --rate %d --fft 2048 --hop 1024 --pfa 1e-4 --out feature_test.csv 2>iqdetect_error2.txt",
              TEST_SAMPLE_RATE);
 
     if (system(cmd) == 0) {

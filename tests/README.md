@@ -2,12 +2,14 @@
 
 ## Overview
 
-The IQ Lab test suite provides comprehensive testing for all core modules:
+The IQ Lab test suite provides comprehensive testing for all core modules and tools:
 
-- **SigMF Module**: Metadata I/O and validation
-- **FFT Module**: Signal processing accuracy and performance
-- **Window Module**: Spectral analysis functions
-- **Integration Tests**: Complete signal processing pipeline
+- **Phase 0-4 Coverage**: Complete toolchain validation
+- **Signal Processing**: FFT, filtering, demodulation accuracy
+- **Channelization**: PFB and multi-channel processing
+- **Batch Processing**: YAML-driven pipeline execution
+- **Integration Tests**: End-to-end workflow validation
+- **Golden Tests**: Deterministic output verification
 
 ## Test Structure
 

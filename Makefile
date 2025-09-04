@@ -317,8 +317,56 @@ test-yaml-parse: tests/unit/test_yaml_parse.exe
 	./tests/unit/test_yaml_parse.exe
 
 # Clean build artifacts
+# Test runner targets
+test: test-comprehensive
+	@echo "✅ All tests completed successfully!"
+
+test-comprehensive:
+	@echo "🧪 Running comprehensive test suite..."
+	@if command -v bash >/dev/null 2>&1 && [ -f tests/test_runner.sh ]; then \
+		bash tests/test_runner.sh; \
+	else \
+		echo "🪟 Running Windows test suite..."; \
+		cmd /c "tests\\test_runner.bat"; \
+	fi
+
+test-quick: all
+	@echo "⚡ Running quick test suite..."
+	@make test-iqchan
+	@make test-iqdetect-acceptance
+	@make test-iqdemod-fm-acceptance
+	@echo "✅ Quick tests completed!"
+
+test-unit: test-yaml-parse test-cfar-os test-features
+	@echo "✅ Unit tests completed!"
+
+test-integration: test-iqchan test-iqjob test-iqdetect-acceptance
+	@echo "✅ Integration tests completed!"
+
+test-acceptance: test-iqdetect-acceptance test-iqdemod-fm-acceptance test-iqdemod-am-acceptance test-iqdemod-ssb-acceptance
+	@echo "✅ Acceptance tests completed!"
+
+# Cross-platform test runner
+test-cross-platform:
+	@echo "🌐 Running cross-platform tests..."
+	@if [ "$$OS" = "Windows_NT" ]; then \
+		if exist tests\test_runner.bat ( \
+			tests\test_runner.bat \
+		) else ( \
+			echo "Windows test runner not found"; \
+			exit 1; \
+		); \
+	else \
+		if [ -f tests/test_runner.sh ]; then \
+			./tests/test_runner.sh; \
+		else \
+			echo "Unix test runner not found"; \
+			exit 1; \
+		fi; \
+	fi
+
 clean:
 	rm -rf $(BUILD_DIR) $(TOOLS)
 
 # Development helpers
-.PHONY: all clean dirs test
+.PHONY: all clean dirs test test-comprehensive test-quick test-unit test-integration test-acceptance test-cross-platform

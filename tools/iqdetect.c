@@ -25,7 +25,7 @@
  *   iqdetect.exe --in signal.iq --rate 2000000 --fft 4096 --hop 1024 --pfa 1e-3 --cut --out events.csv
  *
  *   # JSON output with custom parameters
- *   iqdetect.exe --in signal.iq --format jsonl --max-time-gap 100 --max-freq-gap 20000 --out events.jsonl
+ *   iqdetect.exe --in signal.iq --output-format jsonl --max-time-gap 100 --max-freq-gap 20000 --out events.jsonl
  *
  * Technical Pipeline:
  * 1. Load IQ data with SigMF metadata
@@ -97,6 +97,7 @@ typedef struct {
 
     // Processing options
     bool verbose;              // Verbose output
+    bool show_help;            // Show help and exit
 } iqdetect_config_t;
 
 // Detection context structure
@@ -148,12 +149,19 @@ int main(int argc, char **argv) {
         .max_clusters = 100,
         .output_format = "csv",
         .generate_cutouts = false,
-        .verbose = false
+        .verbose = false,
+        .show_help = false
     };
 
     if (!parse_arguments(argc, argv, &config)) {
         print_usage();
         return 1;
+    }
+
+    // Handle help option
+    if (config.show_help) {
+        print_usage();
+        return 0;
     }
 
     // Initialize processing context
@@ -176,7 +184,7 @@ int main(int argc, char **argv) {
                config.pfa, config.ref_cells, config.guard_cells, config.os_rank);
         printf("  Max Time Gap: %.1f ms, Max Freq Gap: %.0f Hz\n",
                config.max_time_gap_ms, config.max_freq_gap_hz);
-        printf("  Output: %s (%s)\n", config.output_file, config.output_format);
+        printf("  Output: %s (format: %s)\n", config.output_file, config.output_format);
         printf("\n");
     }
 
@@ -218,16 +226,26 @@ static void print_usage(void) {
     printf("  --max-freq-gap <Hz>  Maximum frequency gap for clustering (default: 10000.0)\n");
     printf("  --max-clusters <N>   Maximum number of active clusters (default: 100)\n\n");
     printf("Output Options:\n");
-    printf("  --format {csv|jsonl} Output format (default: csv)\n");
+    printf("  --output-format {csv|jsonl} Output format (default: csv)\n");
     printf("  --cut                Generate IQ cutouts for detected events\n");
-    printf("  --verbose            Enable verbose output\n\n");
+    printf("  --verbose            Enable verbose output\n");
+    printf("  --help, -h           Show this help message\n\n");
     printf("Examples:\n");
     printf("  iqdetect --in signal.iq --format s16 --rate 2000000 --out events.csv\n");
-    printf("  iqdetect --in signal.iq --format s16 --rate 2000000 --pfa 1e-4 --cut --out events.jsonl\n");
+    printf("  iqdetect --in signal.iq --format s16 --rate 2000000 --pfa 1e-4 --cut --output-format jsonl --out events.jsonl\n");
 }
 
 // Parse command line arguments
 static bool parse_arguments(int argc, char **argv, iqdetect_config_t *config) {
+    // First pass: check for help
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            config->show_help = true;
+            return true;
+        }
+    }
+
+    // Second pass: parse other arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--in") == 0 && i + 1 < argc) {
             config->input_file = argv[++i];
@@ -257,15 +275,12 @@ static bool parse_arguments(int argc, char **argv, iqdetect_config_t *config) {
             config->max_clusters = (uint32_t)strtoul(argv[++i], NULL, 10);
         } else if (strcmp(argv[i], "--out") == 0 && i + 1 < argc) {
             config->output_file = argv[++i];
-        } else if (strcmp(argv[i], "--format") == 0 && i + 1 < argc) {
+        } else if (strcmp(argv[i], "--output-format") == 0 && i + 1 < argc) {
             config->output_format = argv[++i];
         } else if (strcmp(argv[i], "--cut") == 0) {
             config->generate_cutouts = true;
         } else if (strcmp(argv[i], "--verbose") == 0) {
             config->verbose = true;
-        } else if (strcmp(argv[i], "--help") == 0) {
-            print_usage();
-            exit(0);
         } else {
             fprintf(stderr, "Unknown argument: %s\n", argv[i]);
             return false;
@@ -297,6 +312,7 @@ static bool parse_arguments(int argc, char **argv, iqdetect_config_t *config) {
 // Initialize detection context
 static bool initialize_context(iqdetect_context_t *ctx, iqdetect_config_t *config) {
     memset(ctx, 0, sizeof(*ctx));
+    ctx->config = config; // Restore config pointer after memset
 
     // Load IQ data
     if (!iq_load_file(config->input_file, &ctx->iq_data)) {
@@ -322,11 +338,13 @@ static bool initialize_context(iqdetect_context_t *ctx, iqdetect_config_t *confi
     }
 
     // Initialize FFT
+    printf("Debug: Creating FFT plan with size %u\n", config->fft_size);
     ctx->fft_plan = fft_plan_create(config->fft_size, FFT_FORWARD);
     if (!ctx->fft_plan) {
         fprintf(stderr, "Failed to create FFT plan\n");
         return false;
     }
+    printf("Debug: FFT plan created\n");
 
     // Allocate FFT buffers
     ctx->fft_in = malloc(config->fft_size * sizeof(fft_complex_t));
@@ -387,22 +405,19 @@ static void cleanup_context(iqdetect_context_t *ctx) {
 static bool process_iq_data(iqdetect_context_t *ctx) {
     iqdetect_config_t *config = ctx->config;
 
-    if (config->verbose) {
-        printf("Processing %zu IQ samples at %u Hz...\n",
-               ctx->iq_data.num_samples, ctx->iq_data.sample_rate);
-    }
-
     uint64_t num_frames = 0;
     uint64_t total_detections = 0;
 
-    // Process data in overlapping frames
     for (uint64_t offset = 0; offset + config->fft_size <= ctx->iq_data.num_samples;
          offset += config->hop_size) {
 
-        // Prepare FFT input
+        // Prepare FFT input - convert IQ samples to complex format
         for (uint32_t i = 0; i < config->fft_size; i++) {
-            float i_val = ctx->iq_data.data[(offset + i) * 2];
-            float q_val = ctx->iq_data.data[(offset + i) * 2 + 1];
+            size_t sample_idx = offset + i;
+            if (sample_idx >= ctx->iq_data.num_samples) break;
+
+            float i_val = ctx->iq_data.data[sample_idx * 2];
+            float q_val = ctx->iq_data.data[sample_idx * 2 + 1];
             ctx->fft_in[i] = i_val + q_val * I;
         }
 
@@ -412,59 +427,61 @@ static bool process_iq_data(iqdetect_context_t *ctx) {
             continue;
         }
 
-        // FFT shift
+        // FFT shift to center DC
         if (!fft_shift(ctx->fft_out, ctx->fft_shifted, config->fft_size)) {
             fprintf(stderr, "FFT shift failed at frame %llu\n", (unsigned long long)num_frames);
             continue;
         }
 
-        // Calculate power spectrum
+        // Calculate power spectrum (magnitude squared)
         for (uint32_t i = 0; i < config->fft_size; i++) {
             double real = creal(ctx->fft_shifted[i]);
             double imag = cimag(ctx->fft_shifted[i]);
             ctx->power_spectrum[i] = real * real + imag * imag;
         }
 
-        // Detect signals
-        cfar_detection_t detections[100]; // Reasonable maximum
+        // Apply CFAR detection
+        cfar_detection_t detections[100]; // Reasonable maximum per frame
         uint32_t num_detections = cfar_os_process_frame(&ctx->cfar_detector,
                                                       ctx->power_spectrum,
                                                       detections, 100);
 
         total_detections += num_detections;
 
-        // Add detections to clustering
+        // Process detections - convert to Hz and time
         double frame_time = (double)offset / (double)config->sample_rate;
+
         for (uint32_t i = 0; i < num_detections; i++) {
-            if (!cluster_add_detection(&ctx->cluster_engine, &detections[i], frame_time)) {
+            cfar_detection_t *det = &detections[i];
+
+            // Add to clustering engine
+            if (!cluster_add_detection(&ctx->cluster_engine, det, frame_time)) {
                 if (config->verbose) {
-                    printf("Warning: Failed to add detection to cluster\n");
+                    printf("Warning: Failed to add detection to cluster at frame %llu\n",
+                           (unsigned long long)num_frames);
                 }
             }
         }
 
-        // Extract completed events periodically
-        cluster_event_t events[50];
-        uint32_t num_events = cluster_get_events(&ctx->cluster_engine, events, 50, frame_time);
+        // Periodically extract completed events
+        if (num_frames % 100 == 0) { // Extract events every 100 frames
+            cluster_event_t events[50];
+            uint32_t num_events = cluster_get_events(&ctx->cluster_engine, events, 50, frame_time);
 
-        if (num_events > 0) {
-            if (config->verbose) {
-                printf("Extracted %u events at frame %llu\n", num_events, (unsigned long long)num_frames);
-            }
+            // Debug: cluster_get_events returned %u events at frame %llu
 
-            // Write events to output file
-            if (strcmp(config->output_format, "jsonl") == 0) {
-                write_events_jsonl(events, num_events, ctx);
-            } else {
-                write_events_csv(events, num_events, ctx);
-            }
+            if (num_events > 0) {
+                if (config->verbose) {
+                    printf("Extracted %u events at frame %llu\n", num_events, (unsigned long long)num_frames);
+                }
 
-                    // Generate cutouts if requested
-        if (config->generate_cutouts) {
-            for (uint32_t i = 0; i < num_events; i++) {
-                generate_iq_cutout(&events[i], i, ctx);
+                // Write events to output file
+                if (strcmp(config->output_format, "jsonl") == 0) {
+                    write_events_jsonl(events, num_events, ctx);
+                } else {
+                    write_events_csv(events, num_events, ctx);
+                }
             }
-        }
         }
 
         num_frames++;
@@ -475,21 +492,18 @@ static bool process_iq_data(iqdetect_context_t *ctx) {
     double final_time = (double)ctx->iq_data.num_samples / (double)config->sample_rate;
     uint32_t num_events = cluster_get_events(&ctx->cluster_engine, events, 50, final_time);
 
+    // Debug: Final cluster_get_events returned %u events
+
     if (num_events > 0) {
         if (config->verbose) {
             printf("Extracted %u final events\n", num_events);
         }
 
+        // Write final events to output file
         if (strcmp(config->output_format, "jsonl") == 0) {
             write_events_jsonl(events, num_events, ctx);
         } else {
             write_events_csv(events, num_events, ctx);
-        }
-
-        if (config->generate_cutouts) {
-            for (uint32_t i = 0; i < num_events; i++) {
-                generate_iq_cutout(&events[i], i, ctx);
-            }
         }
     }
 
@@ -565,7 +579,7 @@ static bool write_events_jsonl(const cluster_event_t *events, uint32_t num_event
 }
 
 // Generate IQ cutout for detected event
-static bool generate_iq_cutout(const cluster_event_t *event, uint32_t event_index,
+__attribute__((unused)) static bool generate_iq_cutout(const cluster_event_t *event, uint32_t event_index,
                              iqdetect_context_t *ctx) {
     iqdetect_config_t *config = ctx->config;
 
