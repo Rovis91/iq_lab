@@ -16,6 +16,7 @@
 // Test counters
 static int tests_run = 0;
 static int tests_passed = 0;
+static int tests_failed = 0;
 
 // Test helper macros
 #define TEST_START(name) \
@@ -27,7 +28,10 @@ static int tests_passed = 0;
     tests_passed++;
 
 #define TEST_FAIL(msg) \
-    printf("  ❌ FAILED: %s\n", msg);
+    do { \
+        printf("  ❌ FAILED: %s\n", msg); \
+        tests_failed++; \
+    } while (0)
 
 #define TEST_END() \
     printf("  Tests run: %d, Passed: %d\n\n", tests_run, tests_passed);
@@ -303,5 +307,5 @@ int main(void) {
     printf("Test Summary: %d/%d tests passed\n", tests_passed, tests_run);
     printf("========================================\n");
 
-    return tests_passed == tests_run ? EXIT_SUCCESS : EXIT_FAILURE;
+    return tests_failed == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

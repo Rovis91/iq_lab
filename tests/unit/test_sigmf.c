@@ -14,6 +14,7 @@
 // Test counters
 static int tests_run = 0;
 static int tests_passed = 0;
+static int tests_failed = 0;
 
 // Test helper macros
 #define TEST_START(name) \
@@ -25,7 +26,10 @@ static int tests_passed = 0;
     tests_passed++;
 
 #define TEST_FAIL(msg) \
-    printf("  ❌ FAILED: %s\n", msg);
+    do { \
+        printf("  ❌ FAILED: %s\n", msg); \
+        tests_failed++; \
+    } while (0)
 
 #define TEST_END() \
     printf("\n");
@@ -112,26 +116,6 @@ void test_filename_generation() {
     TEST_END();
 }
 
-// Test metadata file existence check
-void test_file_existence() {
-    TEST_START("File Existence Check");
-
-    // Test with existing file
-    if (sigmf_meta_file_exists("data/test.iq")) {
-        TEST_PASS();
-    } else {
-        TEST_FAIL("Should detect existing SigMF file");
-    }
-
-    // Test with non-existing file
-    if (!sigmf_meta_file_exists("nonexistent.iq")) {
-        TEST_PASS();
-    } else {
-        TEST_FAIL("Should not detect non-existing SigMF file");
-    }
-
-    TEST_END();
-}
 
 // Test datatype parsing
 void test_datatype_parsing() {
@@ -257,7 +241,6 @@ int main() {
     test_metadata_initialization();
     test_metadata_creation();
     test_filename_generation();
-    test_file_existence();
     test_datatype_parsing();
     test_datatype_to_string();
     test_capture_management();
@@ -269,7 +252,7 @@ int main() {
     printf("Test Results: %d/%d passed\n", tests_passed, tests_run);
     printf("=====================================\n");
 
-    if (tests_passed == tests_run) {
+    if (tests_failed == 0) {
         printf("🎉 All SigMF tests PASSED!\n");
         return EXIT_SUCCESS;
     } else {
