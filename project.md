@@ -384,6 +384,90 @@ Makefile or CMakeLists.txt
 
 ---
 
+## 13.1 Current Implementation Status
+
+### ✅ **Completed Core Modules (Phase 0)**
+
+#### **IQ Data I/O (`src/iq_core/io_iq.c`)**
+- **Purpose**: Handles loading/saving IQ data in multiple formats (raw s8/s16, WAV IQ)
+- **Features**: Format detection, memory-efficient streaming, WAV header parsing
+- **Usage**: `iq_data_load_file()`, `iq_data_load_wav()`, `iq_data_save_file()`
+- **Formats**: Raw IQ (interleaved I/Q), WAV IQ (RIFF containers)
+
+#### **FFT Processing (`src/iq_core/fft.c`)**
+- **Purpose**: High-performance FFT for RF signal analysis and filtering
+- **Features**: Radix-2 Cooley-Tukey algorithm, FFT shift, windowing support
+- **Usage**: `fft_plan_create()`, `fft_execute()`, `fft_apply_window()`
+- **Performance**: O(N log N), optimized for real-time SDR applications
+
+#### **Window Functions (`src/iq_core/window.c`)**
+- **Purpose**: Implements DSP window functions to reduce spectral leakage
+- **Features**: Hann, Hamming, Blackman, Blackman-Harris, Flat-Top windows
+- **Usage**: `window_generate()`, `window_apply()`, `window_get_properties()`
+- **Properties**: Coherent gain, processing gain, ENBW calculation
+
+#### **SigMF Metadata (`src/iq_core/io_sigmf.c`)**
+- **Purpose**: Reads/writes SigMF v1.2.0 metadata for standardized RF recordings
+- **Features**: JSON parsing/writing, metadata validation, UTC timestamps
+- **Usage**: `sigmf_load_metadata()`, `sigmf_save_metadata()`, `sigmf_validate_metadata()`
+- **Standards**: Full SigMF v1.2.0 compliance without external dependencies
+
+#### **PNG Visualization (`src/viz/img_png.c`)**
+- **Purpose**: Creates PNG images for spectrum and waterfall visualization
+- **Features**: RGB pixel manipulation, power-to-color mapping, compression
+- **Usage**: `png_image_init()`, `png_image_set_pixel()`, `png_image_write_file()`
+- **Format**: 24-bit RGB PNG with lossless compression
+
+#### **Axis Drawing (`src/viz/draw_axes.c`)**
+- **Purpose**: Adds calibrated axes and labels to spectrum/waterfall images
+- **Features**: Frequency axes (Hz/kHz/MHz), power axes (dBFS), embedded font
+- **Usage**: `draw_axes()`, `draw_axis_labels()`, `axis_config_init()`
+- **Calibration**: Automatic unit selection and tick spacing
+
+### ✅ **Completed Tools**
+
+#### **Image Generator (`tools/generate_images.c`)**
+- **Purpose**: Creates spectrum and waterfall PNGs from IQ recordings
+- **Features**: Automatic power scaling, FFT analysis, axis annotation
+- **Usage**: `./generate_images` (auto-detects data files)
+- **Output**: `spectrum.png` (frequency vs power), `waterfall.png` (frequency vs time)
+- **Current Status**: ✅ Working - successfully generates kiwi_spectrum_fixed.png and kiwi_waterfall_fixed.png
+
+#### **IQ Info Analyzer (`tools/iqinfo.c`)**
+- **Purpose**: Analyzes IQ files and provides comprehensive statistics
+- **Features**: RMS power, DC offset, duration, SigMF metadata support
+- **Usage**: `./iqinfo --in <file> --format {s8|s16} --rate <Hz> [--meta <meta>]`
+- **Output**: JSON statistics report with noise floor, power analysis
+
+#### **File Converter (`tools/file_converter.c`)**
+- **Purpose**: Converts between IQ file formats for compatibility
+- **Features**: Auto format detection, batch processing, memory-efficient
+- **Usage**: `./file_converter [OPTIONS] <input> <output>`
+- **Formats**: Raw IQ (s8/s16), WAV IQ, with automatic conversion
+
+### 📁 **Generated Files**
+
+The image generation tool has successfully created:
+- `kiwi_spectrum_fixed.png` - Spectrum visualization showing frequency vs power (dBFS)
+- `kiwi_waterfall_fixed.png` - Waterfall visualization showing frequency vs time with power coloring
+
+### 🔧 **Build System**
+- **Makefile**: Comprehensive build system with dependency tracking
+- **Compilation**: C11 standard with `-Wall -Wextra -Werror -O2` for production builds
+- **Dependencies**: Minimal - only standard C libraries + stb_image_write for PNG
+
+### 📊 **Testing Framework**
+- **Unit Tests**: Located in `tests/unit/` for individual modules
+- **Integration Tests**: Located in `tests/integration/` for end-to-end workflows
+- **Golden Tests**: Located in `tests/golden/` for regression testing
+
+### 📚 **Documentation**
+- **Complete API Documentation**: All modules now have comprehensive header comments
+- **Usage Examples**: Detailed examples in each tool's documentation
+- **Architecture Documentation**: Multiple docs in `/docs/` explaining design decisions
+
+---
+
 ## 14. Backlog (Prioritized)
 
 1. Core libraries + `iqinfo` + SigMF I/O + PNG/WAV + manifest.

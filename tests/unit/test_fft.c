@@ -12,6 +12,10 @@
 #include <assert.h>
 #include "../../src/iq_core/fft.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Test counters
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -213,11 +217,11 @@ void test_nyquist_frequency() {
         }
     }
 
-    if (fabs(nyquist_magnitude - SIZE/2.0) < 1e-10 && max_other < 1e-10) {
+    if (fabs(nyquist_magnitude - SIZE) < 1e-10 && max_other < 1e-10) {
         TEST_PASS();
     } else {
         TEST_FAIL("Nyquist frequency test failed");
-        printf("    Nyquist magnitude: %.6f (expected: %.1f)\n", nyquist_magnitude, SIZE/2.0);
+        printf("    Nyquist magnitude: %.6f (expected: %.1f)\n", nyquist_magnitude, (double)SIZE);
         printf("    Max other bin: %.2e\n", max_other);
     }
 

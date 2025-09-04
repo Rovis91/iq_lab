@@ -1,3 +1,52 @@
+/*
+ * =============================================================================
+ * IQ Lab - Fast Fourier Transform (FFT) Module
+ * =============================================================================
+ *
+ * PURPOSE:
+ *   Provides high-performance FFT processing for RF signal analysis. Implements
+ *   radix-2 Cooley-Tukey algorithm with optimized memory usage and real-time
+ *   processing capabilities. Essential for spectrum analysis, filtering, and
+ *   demodulation operations.
+ *
+ * ALGORITHMS:
+ *   - Radix-2 FFT: Decimation-in-time Cooley-Tukey algorithm
+ *   - Bit-reversal permutation for optimal memory access
+ *   - Pre-computed twiddle factors for efficiency
+ *   - In-place processing to minimize memory usage
+ *
+ * FEATURES:
+ *   - Forward and inverse FFT support
+ *   - Automatic size validation (power-of-2 requirement)
+ *   - FFT shift for proper frequency domain representation
+ *   - Windowing support (Hann, Hamming, Blackman)
+ *   - Memory-efficient plans with reusable twiddle factors
+ *   - Comprehensive error handling and validation
+ *
+ * PERFORMANCE:
+ *   - O(N log N) complexity for N-point FFT
+ *   - Pre-computed twiddle factors reduce per-transform overhead
+ *   - In-place operation minimizes memory allocation
+ *   - Optimized for real-time SDR applications
+ *
+ * USAGE:
+ *   1. Create FFT plan: fft_plan_create(size, direction)
+ *   2. Execute transform: fft_execute(plan, input, output)
+ *   3. Apply window: fft_apply_window(data, window, size)
+ *   4. Clean up: fft_plan_destroy(plan)
+ *
+ * DEPENDENCIES:
+ *   - Standard C math library
+ *   - Custom complex type definitions from fft.h
+ *
+ * LIMITATIONS:
+ *   - FFT size must be power of 2 (2^1 to 2^24)
+ *   - Maximum size: 16M points (FFT_MAX_SIZE)
+ *   - Input/output arrays must be properly allocated
+ *
+ * =============================================================================
+ */
+
 #include "fft.h"
 #include <stdlib.h>
 #include <string.h>
@@ -89,6 +138,11 @@ void fft_plan_destroy(fft_plan_t *plan) {
 // Execute FFT using pre-computed plan
 bool fft_execute(const fft_plan_t *plan, const fft_complex_t *input, fft_complex_t *output) {
     if (!plan || !input || !output) {
+        return false;
+    }
+
+    // Validate plan integrity
+    if (!plan->twiddle_factors || !plan->bit_reversal_table) {
         return false;
     }
 
@@ -284,7 +338,7 @@ void fft_iq_to_complex(const float *iq_data, fft_complex_t *complex_data,
                       uint32_t num_samples, bool scale_to_unit) {
     if (!iq_data || !complex_data || num_samples == 0) return;
 
-    double scale = scale_to_unit ? 1.0 : (1.0 / 32768.0);  // Assume s16 range
+    double scale = scale_to_unit ? (1.0 / 32768.0) : 1.0;  // Assume s16 range
 
     for (uint32_t i = 0; i < num_samples; i++) {
         double i_val = (double)iq_data[i * 2] * scale;

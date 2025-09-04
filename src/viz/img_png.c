@@ -1,3 +1,57 @@
+/*
+ * =============================================================================
+ * IQ Lab - PNG Image Generation Module
+ * =============================================================================
+ *
+ * PURPOSE:
+ *   Creates PNG images for RF signal visualization including spectra and
+ *   waterfalls. Uses the stb_image_write library for high-quality, compressed
+ *   PNG output with proper color mapping and axis annotation.
+ *
+ * FEATURES:
+ *   - Full-color RGB pixel manipulation
+ *   - Automatic power-to-color mapping with configurable palettes
+ *   - Memory-efficient image buffer management
+ *   - PNG compression with high quality preservation
+ *   - Support for large images (limited only by available memory)
+ *   - Error handling for invalid operations
+ *
+ * COLOR MAPPING:
+ *   - Power levels mapped to HSV color space
+ *   - Low power: Blue/cool colors
+ *   - Medium power: Green/yellow
+ *   - High power: Red/hot colors
+ *   - Configurable color schemes for different applications
+ *
+ * USAGE:
+ *   1. Initialize image: png_image_init(&img, width, height)
+ *   2. Set pixels: png_image_set_pixel(&img, x, y, r, g, b)
+ *   3. Save to file: png_image_write_file(&img, filename)
+ *   4. Clean up: png_image_destroy(&img)
+ *
+ * PERFORMANCE:
+ *   - In-memory buffer operations for speed
+ *   - PNG compression performed once at save time
+ *   - Minimal memory overhead beyond image data
+ *
+ * DEPENDENCIES:
+ *   - stb_image_write.h: Single-file PNG writing library
+ *   - Standard C libraries (stdlib, string, stdio)
+ *
+ * FILE FORMAT:
+ *   - PNG (Portable Network Graphics)
+ *   - 24-bit RGB color depth
+ *   - Lossless compression
+ *   - Widely supported in browsers and image viewers
+ *
+ * LIMITATIONS:
+ *   - No alpha channel support (RGB only)
+ *   - Image size limited by available RAM
+ *   - Single-threaded operation
+ *
+ * =============================================================================
+ */
+
 #include "img_png.h"
 #include "stb_image_write.h"
 #include <stdlib.h>

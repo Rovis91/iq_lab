@@ -194,39 +194,42 @@ void test_full_pipeline(void) {
            iq_data.num_samples, iq_data.sample_rate);
     iq_free(&iq_data);
 
-    // Test spectrogram generation
-    png_image_t spectrogram;
-    if (png_image_init(&spectrogram, 512, 256)) {
-        png_image_fill(&spectrogram, 0, 0, 0);
+    // Test spectrum generation
+    png_image_t spectrum;
+    if (png_image_init(&spectrum, 512, 256)) {
+        png_image_fill(&spectrum, 0, 0, 0);
 
-        // Simulate some basic spectrogram data
-        for (uint32_t y = 0; y < 256; y++) {
-            for (uint32_t x = 0; x < 512; x++) {
-                // Create a simple test pattern with some peaks
-                float intensity = 0.0f;
-                if (x == 100 || x == 200 || x == 300) { // Signal peaks
-                    intensity = 0.8f;
-                } else if (x % 50 == 0) { // Noise
-                    intensity = 0.1f;
-                }
-                uint8_t r, g, b;
-                png_intensity_to_color(intensity, &r, &g, &b);
-                png_image_set_pixel(&spectrogram, x, y, r, g, b);
+        // Simulate some basic spectrum data
+        for (uint32_t x = 0; x < 512; x++) {
+            // Create a simple test pattern with some peaks
+            float intensity = 0.0f;
+            if (x == 100 || x == 200 || x == 300) { // Signal peaks
+                intensity = 0.8f;
+            } else if (x % 50 == 0) { // Noise
+                intensity = 0.1f;
+            }
+
+            uint8_t r, g, b;
+            png_intensity_to_color(intensity, &r, &g, &b);
+
+            // Draw vertical line for spectrum
+            for (uint32_t y = 40; y < 256; y++) {
+                png_image_set_pixel(&spectrum, x, y, r, g, b);
             }
         }
 
         // Add axes
-        draw_frequency_axis(spectrogram.data, 512, 256, 40, 100000000.0,
+        draw_frequency_axis(spectrum.data, 512, 256, 40, 100000000.0,
                            2000000, 2048, 255, 255, 255);
-        draw_db_scale(spectrogram.data, 512, 256, 40, -60.0, 20.0, 255, 255, 255);
+        draw_db_scale(spectrum.data, 512, 256, 40, -60.0, 20.0, 255, 255, 255);
 
-        // Save spectrogram
-        char spectrogram_file[256];
-        snprintf(spectrogram_file, sizeof(spectrogram_file), "%s.png", output_prefix);
-        assert(png_image_write(&spectrogram, spectrogram_file) == true);
+        // Save spectrum
+        char spectrum_file[256];
+        snprintf(spectrum_file, sizeof(spectrum_file), "%s_spectrum.png", output_prefix);
+        assert(png_image_write(&spectrum, spectrum_file) == true);
 
-        printf("✓ Generated spectrogram: %s\n", spectrogram_file);
-        png_image_free(&spectrogram);
+        printf("✓ Generated spectrum: %s\n", spectrum_file);
+        png_image_free(&spectrum);
     }
 
     printf("✓ Full pipeline integration tests passed\n");

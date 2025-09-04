@@ -27,7 +27,7 @@ CONVERTER_OBJS = build/converter.o \
                  build/file_utils.o
 
 # Tool executables
-TOOLS = iqinfo iqls file_converter
+TOOLS = iqinfo file_converter generate_images
 
 # Default target
 all: dirs $(TOOLS)
@@ -48,7 +48,6 @@ build/fft.o: src/iq_core/fft.c src/iq_core/fft.h
 
 build/window.o: src/iq_core/window.c src/iq_core/window.h
 	$(CC) $(CFLAGS) -c $< -o $@
-
 
 # Visualization compilation
 build/img_png.o: src/viz/img_png.c src/viz/img_png.h src/viz/stb_image_write.h
@@ -78,10 +77,11 @@ build/file_utils.o: src/converter/utils/file_utils.c src/converter/utils/file_ut
 iqinfo: tools/iqinfo.c $(CORE_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
-iqls: tools/iqls.c $(CORE_OBJS) $(VIZ_OBJS)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
 file_converter: tools/file_converter.c $(CORE_OBJS) $(CONVERTER_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+generate_images: tools/generate_images.c $(CORE_OBJS) $(VIZ_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
 # Clean build artifacts

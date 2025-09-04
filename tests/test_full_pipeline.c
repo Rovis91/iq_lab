@@ -21,8 +21,8 @@ int main(void) {
 
     printf("✅ Loaded %zu samples at %u Hz\n", iq_data.num_samples, iq_data.sample_rate);
 
-    // Create spectrogram image
-    printf("Creating spectrogram image...\n");
+    // Create spectrum image
+    printf("Creating spectrum image...\n");
     const uint32_t img_width = 512;
     const uint32_t img_height = 256;
     const uint32_t margin = 40;
@@ -37,46 +37,41 @@ int main(void) {
     // Fill background
     png_image_fill(&img, 0, 0, 0);
 
-    // Create a simple spectrogram pattern from IQ data
-    printf("Generating spectrogram pattern...\n");
+    // Create a simple spectrum from IQ data
+    printf("Generating spectrum...\n");
     const uint32_t fft_size = 256;
-    const uint32_t hop_size = 128;
     const size_t max_samples = iq_data.num_samples;
 
-    for (uint32_t t = 0; t < 256 && (t * hop_size + fft_size) < max_samples; t++) {
-        uint32_t start_sample = t * hop_size;
+    // Simple FFT simulation for spectrum
+    for (uint32_t f = 0; f < 512; f++) {
+        double total_power = 0.0;
 
-        // Simple magnitude calculation (just for visualization)
-        double max_magnitude = 0.0;
-        for (uint32_t i = 0; i < fft_size && (start_sample + i) < max_samples; i++) {
-            double i_val = iq_data.data[(start_sample + i) * 2];
-            double q_val = iq_data.data[(start_sample + i) * 2 + 1];
+        // Simulate frequency bin calculation
+        for (uint32_t i = 0; i < fft_size && i < max_samples; i++) {
+            double i_val = iq_data.data[i * 2];
+            double q_val = iq_data.data[i * 2 + 1];
             double mag = sqrt(i_val * i_val + q_val * q_val);
-            if (mag > max_magnitude) max_magnitude = mag;
+
+            // Simple frequency weighting (higher frequencies get more emphasis)
+            double freq_weight = (double)f / 512.0;
+            total_power += mag * (0.1 + 0.9 * freq_weight);
         }
 
-        // Create frequency bins (simplified)
-        for (uint32_t f = 0; f < 512; f++) {
-            // Simulate some frequency content
-            double freq_factor = (double)f / 512.0;
-            double time_factor = (double)t / 256.0;
-            double signal_strength = max_magnitude * (0.1 + 0.8 * freq_factor * time_factor);
+        // Convert to dB-like scale
+        double power_db = 20.0 * log10(total_power + 1e-12);
+        double normalized_power = (power_db + 60.0) / 80.0; // -60dB to +20dB range
 
-            // Convert to intensity (0.0 to 1.0)
-            float intensity = (float)(signal_strength / 1.0); // Normalize
-            if (intensity > 1.0f) intensity = 1.0f;
-            if (intensity < 0.0f) intensity = 0.0f;
+        // Clamp to valid range
+        if (normalized_power < 0.0) normalized_power = 0.0;
+        if (normalized_power > 1.0) normalized_power = 1.0;
 
-            // Convert to color
-            uint8_t r, g, b;
-            png_intensity_to_color(intensity, &r, &g, &b);
+        // Convert to color
+        uint8_t r, g, b;
+        png_intensity_to_color((float)normalized_power, &r, &g, &b);
 
-            // Set pixel
-            png_image_set_pixel(&img, f, t, r, g, b);
-        }
-
-        if (t % 50 == 0) {
-            printf("  Processed %u/%u time slices\n", t + 1, 256);
+        // Draw vertical line for this frequency bin
+        for (uint32_t y = margin; y < img_height + margin; y++) {
+            png_image_set_pixel(&img, f, y, r, g, b);
         }
     }
 
@@ -87,12 +82,12 @@ int main(void) {
     draw_db_scale(img.data, img_width, img_height + margin, margin,
                  -60.0, 20.0, 255, 255, 255);
 
-    // Save the spectrogram
-    printf("Saving spectrogram...\n");
-    if (png_image_write(&img, "kiwi_spectrogram_test.png")) {
-        printf("✅ Successfully created kiwi_spectrogram_test.png\n");
+    // Save the spectrum
+    printf("Saving spectrum...\n");
+    if (png_image_write(&img, "kiwi_spectrum_test.png")) {
+        printf("✅ Successfully created kiwi_spectrum_test.png\n");
     } else {
-        printf("❌ Failed to save spectrogram\n");
+        printf("❌ Failed to save spectrum\n");
         png_image_free(&img);
         iq_free(&iq_data);
         return 1;
@@ -102,8 +97,8 @@ int main(void) {
     iq_free(&iq_data);
 
     printf("\n🎉 Full pipeline test completed successfully!\n");
-    printf("📊 Generated spectrogram from real IQ data\n");
-    printf("📁 Output: kiwi_spectrogram_test.png\n");
+    printf("📊 Generated spectrum from real IQ data\n");
+    printf("📁 Output: kiwi_spectrum_test.png\n");
 
     return 0;
 }

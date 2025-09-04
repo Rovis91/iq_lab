@@ -1,3 +1,42 @@
+/*
+ * =============================================================================
+ * IQ Lab - IQ Data Input/Output Module
+ * =============================================================================
+ *
+ * PURPOSE:
+ *   Handles loading, saving, and processing of IQ (In-phase/Quadrature) data
+ *   in various formats. Supports raw binary IQ files (8-bit/16-bit) and WAV
+ *   IQ recordings. Provides memory-efficient streaming and format conversion.
+ *
+ * SUPPORTED FORMATS:
+ *   - Raw IQ (s8/s16): Interleaved I,Q samples as signed integers
+ *   - WAV IQ: RIFF/WAV container with IQ data as audio channels
+ *   - Complex float: Normalized [-1,1] for internal processing
+ *
+ * FEATURES:
+ *   - Automatic format detection from file extensions
+ *   - Memory-efficient block-based processing for large files
+ *   - Format conversion between s8/s16 and float complex
+ *   - WAV header parsing and validation
+ *   - Error handling with detailed error messages
+ *   - Sample rate and data type preservation
+ *
+ * USAGE:
+ *   Load IQ data: iq_data_load_file() or iq_data_load_wav()
+ *   Save IQ data: iq_data_save_file()
+ *   Format conversion: iq_convert_format()
+ *
+ * DEPENDENCIES:
+ *   - Standard C libraries (stdio, stdlib, string, errno, math)
+ *   - Custom types from io_iq.h
+ *
+ * THREAD SAFETY:
+ *   Individual functions are thread-safe, but shared iq_data_t structures
+ *   should be protected with external synchronization.
+ *
+ * =============================================================================
+ */
+
 #include "io_iq.h"
 #include <stdio.h>
 #include <stdlib.h>

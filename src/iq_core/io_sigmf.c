@@ -1,3 +1,62 @@
+/*
+ * =============================================================================
+ * IQ Lab - SigMF Metadata I/O Module
+ * =============================================================================
+ *
+ * PURPOSE:
+ *   Handles reading and writing of SigMF (Signal Metadata Format) metadata
+ *   files for IQ recordings. SigMF provides standardized metadata for RF
+ *   signal recordings, enabling reproducible analysis and data interchange.
+ *
+ * SIGMF STANDARD:
+ *   - Version 1.2.0 compliance
+ *   - JSON-based metadata format
+ *   - Supports complex data types (ci8, ci16, cf32)
+ *   - Frequency, sample rate, and timing information
+ *   - Extensible annotations and captures metadata
+ *
+ * FEATURES:
+ *   - Complete SigMF v1.2.0 reader/writer implementation
+ *   - Lightweight JSON parser (no external dependencies)
+ *   - Automatic format detection and validation
+ *   - Metadata validation and error reporting
+ *   - Support for multiple captures and annotations
+ *   - UTC timestamp handling with timezone support
+ *
+ * METADATA SUPPORTED:
+ *   - Global: version, datatype, sample_rate, center_frequency, description, author, datetime
+ *   - Captures: sample_start, frequency, datetime, sample_count
+ *   - Annotations: sample_start, sample_count, frequency, description, comment
+ *
+ * USAGE:
+ *   1. Initialize metadata: sigmf_init_metadata(&meta)
+ *   2. Load from file: sigmf_load_metadata(filename, &meta)
+ *   3. Save to file: sigmf_save_metadata(filename, &meta)
+ *   4. Validate: sigmf_validate_metadata(&meta)
+ *
+ * FILE FORMAT:
+ *   - Metadata file: .sigmf-meta (JSON)
+ *   - Data file: .sigmf-data (binary IQ)
+ *   - Automatic pairing by filename convention
+ *
+ * PERFORMANCE:
+ *   - Minimal memory footprint
+ *   - Fast JSON parsing without external libraries
+ *   - Efficient string handling and validation
+ *
+ * DEPENDENCIES:
+ *   - Standard C libraries (stdio, stdlib, string, ctype, time)
+ *   - Custom SigMF types from io_sigmf.h
+ *
+ * VALIDATION:
+ *   - Required field checking
+ *   - Data type validation
+ *   - Sample rate and frequency range validation
+ *   - JSON syntax validation
+ *
+ * =============================================================================
+ */
+
 #include "io_sigmf.h"
 #include <stdio.h>
 #include <stdlib.h>

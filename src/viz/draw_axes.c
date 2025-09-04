@@ -3,6 +3,14 @@
 #include <stdio.h>
 #include <math.h>
 
+// Font and drawing constants
+#define FONT_WIDTH 5
+#define FONT_HEIGHT 7
+#define FONT_BITS_PER_CHARACTER 5
+#define CHARACTER_SPACING 6
+#define FONT_NUM_CHARACTERS 95
+#define FONT_DATA_SIZE (FONT_NUM_CHARACTERS * FONT_HEIGHT)
+
 // Simple 5x7 bitmap font data (ASCII 32-126)
 // Each character is 5 bits wide, 7 bits tall
 // Bit 0 = leftmost pixel, MSB = rightmost pixel
@@ -129,8 +137,8 @@ static const uint8_t font_5x7_data[95][7] = {
 
 // Font definition
 const font_t font_5x7 = {
-    .width = 5,
-    .height = 7,
+    .width = FONT_WIDTH,
+    .height = FONT_HEIGHT,
     .data = &font_5x7_data[0][0]
 };
 
@@ -138,7 +146,7 @@ const font_t font_5x7 = {
 void draw_horizontal_line(uint8_t *image_data, uint32_t width, uint32_t height,
                          uint32_t x1, uint32_t x2, uint32_t y,
                          uint8_t r, uint8_t g, uint8_t b) {
-    if (y >= height) return;
+    if (!image_data || width == 0 || height == 0 || y >= height) return;
     if (x1 > x2) { uint32_t temp = x1; x1 = x2; x2 = temp; }
     if (x1 >= width) return;
     if (x2 >= width) x2 = width - 1;
@@ -153,7 +161,7 @@ void draw_horizontal_line(uint8_t *image_data, uint32_t width, uint32_t height,
 void draw_vertical_line(uint8_t *image_data, uint32_t width, uint32_t height,
                        uint32_t x, uint32_t y1, uint32_t y2,
                        uint8_t r, uint8_t g, uint8_t b) {
-    if (x >= width) return;
+    if (!image_data || width == 0 || height == 0 || x >= width) return;
     if (y1 > y2) { uint32_t temp = y1; y1 = y2; y2 = temp; }
     if (y1 >= height) return;
     if (y2 >= height) y2 = height - 1;
@@ -168,30 +176,43 @@ void draw_vertical_line(uint8_t *image_data, uint32_t width, uint32_t height,
 void draw_character(uint8_t *image_data, uint32_t width, uint32_t height,
                    uint32_t x, uint32_t y, char c, const font_t *font,
                    uint8_t r, uint8_t g, uint8_t b) {
-    if (!image_data || !font || c < 32 || c > 126) return;
+    // Comprehensive validation to prevent buffer overflows
+    if (!image_data || !font || !font->data || c < 32 || c > 126) return;
+    if (font->width == 0 || font->height == 0) return;
 
-    // Get character index in font data
-    uint32_t char_index = c - 32;  // ASCII 32 is first character
+    // Get character index in font data (0-94 for 95 characters)
+    uint32_t char_index = c - 32;
+
+    // Validate character index bounds
+    if (char_index >= FONT_NUM_CHARACTERS) return;  // Validate character index
 
     // Draw each pixel of the character
     for (uint8_t char_y = 0; char_y < font->height; char_y++) {
+        // Validate font data array bounds
+        size_t font_data_index = char_index * font->height + char_y;
+        if (font_data_index >= FONT_DATA_SIZE) continue;  // Safety check for font data
+
         for (uint8_t char_x = 0; char_x < font->width; char_x++) {
             uint32_t pixel_x = x + char_x;
             uint32_t pixel_y = y + char_y;
 
+            // Validate pixel coordinates
             if (pixel_x >= width || pixel_y >= height) continue;
 
             // Extract bit from font data (5-bit wide characters)
             // Font data is organized as [character][row], each row is a byte
-            uint8_t font_byte = font->data[char_index * font->height + char_y];
+            uint8_t font_byte = font->data[font_data_index];
 
-            // Bits are stored MSB first (bit 4 is leftmost, bit 0 is rightmost)
-            uint8_t bit_idx = 4 - char_x;  // 4, 3, 2, 1, 0 for char_x = 0, 1, 2, 3, 4
+            // Bits are stored MSB first (FONT_BITS_PER_CHARACTER-1 is leftmost, bit 0 is rightmost)
+            uint8_t bit_idx = (FONT_BITS_PER_CHARACTER - 1) - char_x;
             if (font_byte & (1 << bit_idx)) {
+                // Final bounds check for image buffer
                 size_t pixel_idx = (pixel_y * width + pixel_x) * 3;
-                image_data[pixel_idx + 0] = r;
-                image_data[pixel_idx + 1] = g;
-                image_data[pixel_idx + 2] = b;
+                if (pixel_idx + 2 < (size_t)width * height * 3) {
+                    image_data[pixel_idx + 0] = r;
+                    image_data[pixel_idx + 1] = g;
+                    image_data[pixel_idx + 2] = b;
+                }
             }
         }
     }
@@ -200,11 +221,13 @@ void draw_character(uint8_t *image_data, uint32_t width, uint32_t height,
 void draw_text(uint8_t *image_data, uint32_t width, uint32_t height,
               uint32_t x, uint32_t y, const char *text, const font_t *font,
               uint8_t r, uint8_t g, uint8_t b) {
-    if (!text) return;
+    // Comprehensive null and validity checks
+    if (!image_data || !text || !font || width == 0 || height == 0) return;
+
     uint32_t current_x = x;
     for (size_t i = 0; text[i] != '\0'; i++) {
         draw_character(image_data, width, height, current_x, y, text[i], font, r, g, b);
-        current_x += 6;
+        current_x += CHARACTER_SPACING;
     }
 }
 
@@ -212,7 +235,9 @@ void draw_frequency_axis(uint8_t *image_data, uint32_t width, uint32_t height,
                         uint32_t axis_margin, double center_freq_hz,
                         uint32_t sample_rate_hz, uint32_t fft_size,
                         uint8_t r, uint8_t g, uint8_t b) {
-    if (!image_data || axis_margin >= height) return;
+    // Critical validation checks
+    if (!image_data || axis_margin >= height || width == 0 || height == 0) return;
+    if (fft_size == 0 || sample_rate_hz == 0) return;  // Prevent division by zero
 
     uint32_t axis_y = height - axis_margin;
     draw_horizontal_line(image_data, width, height, 0, width - 1, axis_y, r, g, b);
@@ -221,8 +246,12 @@ void draw_frequency_axis(uint8_t *image_data, uint32_t width, uint32_t height,
     uint32_t num_ticks = 10;
     // Calculate actual graph width (excluding left margin)
     uint32_t graph_width = width - axis_margin;
-    double freq_range = (double)sample_rate_hz;
-    double freq_per_pixel = freq_range / graph_width;  // Map to actual graph area
+    if (graph_width == 0) return;  // Prevent division by zero
+
+    // Use FFT size to calculate proper frequency resolution
+    double freq_resolution = (double)sample_rate_hz / (double)fft_size;
+    double freq_range = freq_resolution * graph_width;  // Total frequency span shown
+    double freq_per_pixel = freq_range / graph_width;   // Hz per pixel
 
     for (uint32_t i = 0; i <= num_ticks; i++) {
         // Position ticks within the actual graph area
@@ -336,5 +365,35 @@ void draw_db_scale(uint8_t *image_data, uint32_t width, uint32_t height,
 
         // Position label to the left of the axis line
         draw_text(image_data, width, height, 5, y - 3, label, &font_5x7, r, g, b);
+    }
+}
+
+// Utility function to format frequency values with appropriate units
+void format_frequency(char *buffer, size_t buffer_size, double frequency_hz) {
+    if (!buffer || buffer_size == 0) return;
+
+    if (frequency_hz >= 1e9) {
+        snprintf(buffer, buffer_size, "%.1fG", frequency_hz / 1e9);
+    } else if (frequency_hz >= 1e6) {
+        snprintf(buffer, buffer_size, "%.1fM", frequency_hz / 1e6);
+    } else if (frequency_hz >= 1e3) {
+        snprintf(buffer, buffer_size, "%.1fk", frequency_hz / 1e3);
+    } else {
+        snprintf(buffer, buffer_size, "%.0f", frequency_hz);
+    }
+}
+
+// Utility function to format time values with appropriate units
+void format_time(char *buffer, size_t buffer_size, double time_seconds) {
+    if (!buffer || buffer_size == 0) return;
+
+    if (time_seconds >= 1.0) {
+        snprintf(buffer, buffer_size, "%.1fs", time_seconds);
+    } else if (time_seconds >= 0.001) {
+        snprintf(buffer, buffer_size, "%.0fms", time_seconds * 1000.0);
+    } else if (time_seconds >= 1e-6) {
+        snprintf(buffer, buffer_size, "%.0fus", time_seconds * 1e6);
+    } else {
+        snprintf(buffer, buffer_size, "%.1fus", time_seconds * 1e6);
     }
 }

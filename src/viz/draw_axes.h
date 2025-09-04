@@ -69,14 +69,8 @@ void draw_db_scale(uint8_t *image_data, uint32_t width, uint32_t height,
                   uint32_t axis_margin, double min_dbfs, double max_dbfs,
                   uint8_t r, uint8_t g, uint8_t b);
 
-/*
- * Format frequency value for display (Hz, kHz, MHz, GHz)
- */
-void format_frequency(char *buffer, size_t buffer_size, double freq_hz);
-
-/*
- * Format time value for display (seconds, milliseconds, microseconds)
- */
-void format_time(char *buffer, size_t buffer_size, double time_s);
+// Formatting utility functions for frequency and time values
+void format_frequency(char *buffer, size_t buffer_size, double frequency_hz);
+void format_time(char *buffer, size_t buffer_size, double time_seconds);
 
 #endif // IQ_DRAW_AXES_H
