@@ -2,7 +2,7 @@
  * IQ Lab - iqcut: Frequency Translation and Signal Processing Tool
  *
  * Purpose: Advanced IQ signal processing with frequency translation and decimation
- * Author: IQ Lab Development Team
+  *
  *
  * This tool provides professional signal processing capabilities for IQ data,
  * enabling frequency translation, time-domain cutting, and intelligent decimation

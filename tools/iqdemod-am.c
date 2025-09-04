@@ -2,7 +2,7 @@
  * IQ Lab - AM Demodulator Tool
  *
  * Purpose: Command-line AM demodulator with envelope detection
- * Author: IQ Lab Development Team
+  *
  *
  * This tool demodulates AM (Amplitude Modulation) signals from IQ data files
  * using efficient envelope detection algorithms. It provides professional

@@ -2,7 +2,7 @@
  * IQ Lab - iqdetect: Signal Detection and Classification Tool
  *
  * Purpose: Complete signal detection pipeline with CFAR, clustering, and feature extraction
- * Author: IQ Lab Development Team
+  *
  *
  * This tool implements a comprehensive signal detection and classification pipeline
  * that processes IQ data to identify and characterize signals in the frequency domain.

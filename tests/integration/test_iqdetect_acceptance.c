@@ -2,7 +2,7 @@
  * IQ Lab - test_iqdetect_acceptance: Acceptance tests for iqdetect
  *
  * Purpose: Validate iqdetect against project requirements and specifications
- * Author: IQ Lab Development Team
+  *
  * Date: 2025
  *
  * This acceptance test suite validates that iqdetect meets the core project

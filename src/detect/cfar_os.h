@@ -2,7 +2,7 @@
  * IQ Lab - OS-CFAR Detector Header
  *
  * Purpose: Ordered Statistics Constant False Alarm Rate signal detection
- * Author: IQ Lab Development Team
+  *
  *
  * This module implements the OS-CFAR (Ordered Statistics Constant False Alarm Rate)
  * algorithm for detecting signals in frequency domain power spectra. OS-CFAR is

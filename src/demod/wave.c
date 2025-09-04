@@ -2,7 +2,7 @@
  * IQ Lab - WAV Writer Module
  *
  * Purpose: Professional WAV file writer with RIFF header support
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides comprehensive WAV file writing capabilities for
  * audio demodulation outputs. It supports 16-bit PCM format with mono

@@ -2,7 +2,7 @@
  * IQ Lab - AM Demodulator Header
  *
  * Purpose: AM (Amplitude Modulation) demodulation with envelope detection
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides professional AM demodulation capabilities including:
  * - Envelope detection using magnitude calculation: sqrt(I² + Q²)

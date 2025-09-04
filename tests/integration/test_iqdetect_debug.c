@@ -2,7 +2,7 @@
  * IQ Lab - test_iqdetect_debug: Debug test for iqdetect detection pipeline
  *
  * Purpose: Debug the detection pipeline to understand why signals aren't being detected
- * Author: IQ Lab Development Team
+  *
  * Date: 2025
  */
 

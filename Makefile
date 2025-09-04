@@ -32,6 +32,14 @@ DETECT_OBJS = build/cfar_os.o \
               build/cluster.o \
               build/features.o
 
+# Channelization objects
+CHAN_OBJS = build/pfb.o \
+            build/scheduler.o
+
+# Job orchestration objects
+JOB_OBJS = build/yaml_parse.o \
+           build/pipeline.o
+
 # Converter objects
 CONVERTER_OBJS = build/converter.o \
                  build/wav_converter.o \
@@ -39,7 +47,7 @@ CONVERTER_OBJS = build/converter.o \
                  build/file_utils.o
 
 # Tool executables
-TOOLS = iqinfo file_converter generate_images iqls iqcut iqdemod-fm iqdemod-am iqdemod-ssb iqdetect
+TOOLS = iqinfo file_converter generate_images iqls iqcut iqdemod-fm iqdemod-am iqdemod-ssb iqdetect iqchan iqjob
 
 # Default target
 all: dirs $(TOOLS)
@@ -110,6 +118,20 @@ build/cluster.o: src/detect/cluster.c src/detect/cluster.h
 build/features.o: src/detect/features.c src/detect/features.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Channelization compilation
+build/pfb.o: src/chan/pfb.c src/chan/pfb.h
+	$(CC) $(CFLAGS) -c $< -o $@ -lm
+
+build/scheduler.o: src/chan/scheduler.c src/chan/scheduler.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Job orchestration compilation
+build/yaml_parse.o: src/jobs/yaml_parse.c src/jobs/yaml_parse.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/pipeline.o: src/jobs/pipeline.c src/jobs/pipeline.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # Core library compilation (additional)
 build/resample.o: src/iq_core/resample.c src/iq_core/resample.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -149,6 +171,14 @@ build/iqdetect.o: tools/iqdetect.c
 iqdetect: tools/iqdetect.c $(CORE_OBJS) $(DETECT_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
+# iqchan tool
+iqchan: tools/iqchan.c $(CORE_OBJS) $(CHAN_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+# iqjob tool
+iqjob: tools/iqjob.c $(CORE_OBJS) $(JOB_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
 # Integration tests
 tests/integration/test_iqdetect_basic.exe: tests/integration/test_iqdetect_basic.c build/io_iq.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
@@ -163,6 +193,12 @@ tests/integration/test_iqdetect_debug.exe: tests/integration/test_iqdetect_debug
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
 tests/integration/test_iqdetect_acceptance.exe: tests/integration/test_iqdetect_acceptance.c build/io_iq.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+tests/integration/test_iqchan_basic.exe: tests/integration/test_iqchan_basic.c build/io_iq.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+tests/integration/test_iqjob_basic.exe: tests/integration/test_iqjob_basic.c build/io_iq.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
 tests/integration/test_iqls_spectrum.exe: tests/integration/test_iqls_spectrum.c iqls
@@ -182,6 +218,12 @@ test-iqdetect-debug: tests/integration/test_iqdetect_debug.exe
 
 test-iqdetect-acceptance: tests/integration/test_iqdetect_acceptance.exe
 	./tests/integration/test_iqdetect_acceptance.exe
+
+test-iqchan: tests/integration/test_iqchan_basic.exe
+	./tests/integration/test_iqchan_basic.exe
+
+test-iqjob: tests/integration/test_iqjob_basic.exe
+	./tests/integration/test_iqjob_basic.exe
 
 test-iqls: tests/integration/test_iqls_spectrum.exe
 	./tests/integration/test_iqls_spectrum.exe
@@ -267,6 +309,12 @@ tests/unit/test_features.exe: tests/unit/test_features.c $(DETECT_OBJS)
 
 test-features: tests/unit/test_features.exe
 	./tests/unit/test_features.exe
+
+tests/unit/test_yaml_parse.exe: tests/unit/test_yaml_parse.c build/yaml_parse.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+test-yaml-parse: tests/unit/test_yaml_parse.exe
+	./tests/unit/test_yaml_parse.exe
 
 # Clean build artifacts
 clean:

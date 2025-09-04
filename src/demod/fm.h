@@ -2,7 +2,7 @@
  * IQ Lab - FM Demodulator Header
  *
  * Purpose: FM (Frequency Modulation) demodulation with stereo support
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides professional FM demodulation capabilities including:
  * - FM discriminator using phase differentiation

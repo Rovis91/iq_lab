@@ -2,7 +2,7 @@
  * IQ Lab - Automatic Gain Control (AGC) Module
  *
  * Purpose: Professional audio level control with peak-based gain adjustment
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides sophisticated automatic gain control for audio signals,
  * essential for consistent playback levels in demodulated audio. It uses

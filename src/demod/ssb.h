@@ -2,7 +2,7 @@
  * IQ Lab - SSB Demodulator Header
  *
  * Purpose: SSB (Single Sideband) demodulation with BFO mixing
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides professional SSB demodulation capabilities including:
  * - BFO (Beat Frequency Oscillator) mixing for baseband conversion

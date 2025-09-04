@@ -2,7 +2,7 @@
  * IQ Lab - iqls: Interactive Spectrum and Waterfall Visualization Tool
  *
  * Purpose: Professional spectrum analysis with waterfall visualization
- * Author: IQ Lab Development Team
+  *
  *
  * This tool provides comprehensive spectral analysis capabilities for IQ signals,
  * generating both static spectrum plots and dynamic waterfall displays. It uses

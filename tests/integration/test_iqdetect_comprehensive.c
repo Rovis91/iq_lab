@@ -2,7 +2,7 @@
  * IQ Lab - test_iqdetect_comprehensive: Comprehensive integration tests for iqdetect
  *
  * Purpose: Test iqdetect with various signal types, parameters, and edge cases
- * Author: IQ Lab Development Team
+  *
  * Date: 2025
  *
  * This comprehensive test suite validates the complete iqdetect functionality including:

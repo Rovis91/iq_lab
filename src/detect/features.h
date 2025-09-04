@@ -2,7 +2,7 @@
  * IQ Lab - Signal Feature Extraction Header
  *
  * Purpose: Extract signal features for SNR estimation and modulation classification
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides comprehensive signal feature extraction capabilities
  * essential for signal analysis, SNR estimation, and modulation classification.

@@ -2,7 +2,7 @@
  * IQ Lab - test_iqdetect_basic: Basic integration test for iqdetect
  *
  * Purpose: Test basic functionality of iqdetect tool
- * Author: IQ Lab Development Team
+  *
  *
  * This test verifies that the iqdetect tool can process a simple test signal
  * and produce valid event output without errors.

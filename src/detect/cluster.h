@@ -2,7 +2,7 @@
  * IQ Lab - Detection Clustering Header
  *
  * Purpose: Temporal clustering and hysteresis for signal event formation
- * Author: IQ Lab Development Team
+  *
  *
  * This module provides temporal clustering algorithms to group individual
  * signal detections into coherent events. It implements hysteresis-based

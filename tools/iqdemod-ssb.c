@@ -2,7 +2,7 @@
  * IQ Lab - SSB Demodulator Tool
  *
  * Purpose: Command-line SSB demodulator with BFO mixing
- * Author: IQ Lab Development Team
+  *
  *
  * This tool demodulates SSB (Single Sideband) signals from IQ data files
  * using professional BFO (Beat Frequency Oscillator) mixing techniques.

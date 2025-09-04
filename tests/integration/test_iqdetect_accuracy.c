@@ -2,7 +2,7 @@
  * IQ Lab - test_iqdetect_accuracy: Detection accuracy and performance tests
  *
  * Purpose: Test iqdetect detection accuracy with known signals
- * Author: IQ Lab Development Team
+  *
  * Date: 2025
  *
  * This test validates the accuracy of signal detection and feature extraction

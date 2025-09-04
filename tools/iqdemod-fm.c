@@ -2,7 +2,7 @@
  * IQ Lab - FM Demodulator Tool
  *
  * Purpose: Command-line FM demodulator with stereo support
- * Author: IQ Lab Development Team
+  *
  *
  * This tool demodulates FM (Frequency Modulation) signals from IQ data files
  * and outputs high-quality WAV audio. It supports both mono and stereo FM
