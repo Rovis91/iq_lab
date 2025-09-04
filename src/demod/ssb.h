@@ -3,7 +3,6 @@
  *
  * Purpose: SSB (Single Sideband) demodulation with BFO mixing
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This module provides professional SSB demodulation capabilities including:
  * - BFO (Beat Frequency Oscillator) mixing for baseband conversion

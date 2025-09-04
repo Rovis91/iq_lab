@@ -3,7 +3,6 @@
  *
  * Purpose: Advanced IQ signal processing with frequency translation and decimation
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This tool provides professional signal processing capabilities for IQ data,
  * enabling frequency translation, time-domain cutting, and intelligent decimation

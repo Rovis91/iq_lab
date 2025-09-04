@@ -3,7 +3,6 @@
  *
  * Purpose: AM (Amplitude Modulation) demodulation with envelope detection
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This module provides professional AM demodulation capabilities including:
  * - Envelope detection using magnitude calculation: sqrt(I² + Q²)

@@ -3,7 +3,6 @@
  *
  * Purpose: Professional WAV file writer with RIFF header support
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This module provides comprehensive WAV file writing capabilities for
  * audio demodulation outputs. It supports 16-bit PCM format with mono

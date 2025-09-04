@@ -59,6 +59,12 @@ bool iq_load_file(const char *filename, iq_data_t *iq_data);
 void iq_free(iq_data_t *iq_data);
 
 /*
+ * Save IQ data to file in specified format
+ * Converts from normalized float [-1,1] to raw s8/s16 format
+ */
+bool iq_data_save_file(const char *filename, const iq_data_t *iq_data);
+
+/*
  * Convert raw IQ bytes to normalized float array [-1,1]
  * Handles both s8 and s16 formats with proper scaling
  */

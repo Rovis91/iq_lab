@@ -3,7 +3,6 @@
  *
  * Purpose: Command-line AM demodulator with envelope detection
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This tool demodulates AM (Amplitude Modulation) signals from IQ data files
  * using efficient envelope detection algorithms. It provides professional

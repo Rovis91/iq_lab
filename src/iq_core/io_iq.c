@@ -405,6 +405,78 @@ bool iq_load_wav_file(const char *filename, iq_data_t *iq_data) {
     return true;
 }
 
+/*
+ * Save IQ data to file in specified format
+ * Converts from normalized float [-1,1] to raw format
+ */
+bool iq_data_save_file(const char *filename, const iq_data_t *iq_data) {
+    if (!filename || !iq_data || !iq_data->data) {
+        return false;
+    }
+
+    FILE *file = fopen(filename, "wb");
+    if (!file) {
+        return false;
+    }
+
+    bool success = false;
+    uint8_t *buffer = NULL;
+
+    // Allocate buffer for raw data
+    size_t raw_bytes_per_sample = (iq_data->format == IQ_FORMAT_S8) ? 1 : 2;
+    size_t total_raw_bytes = iq_data->num_samples * 2 * raw_bytes_per_sample; // *2 for I+Q
+
+    buffer = malloc(total_raw_bytes);
+    if (!buffer) {
+        fclose(file);
+        return false;
+    }
+
+    // Convert normalized float [-1,1] to raw format
+    if (iq_data->format == IQ_FORMAT_S8) {
+        // Convert to 8-bit signed
+        for (size_t i = 0; i < iq_data->num_samples; i++) {
+            float i_val = iq_data->data[i * 2] * 127.0f;     // I component
+            float q_val = iq_data->data[i * 2 + 1] * 127.0f; // Q component
+
+            // Clamp to valid range
+            if (i_val > 127.0f) i_val = 127.0f;
+            if (i_val < -128.0f) i_val = -128.0f;
+            if (q_val > 127.0f) q_val = 127.0f;
+            if (q_val < -128.0f) q_val = -128.0f;
+
+            buffer[i * 2] = (int8_t)i_val;         // I as 8-bit signed
+            buffer[i * 2 + 1] = (int8_t)q_val;     // Q as 8-bit signed
+        }
+    } else {
+        // Convert to 16-bit signed
+        for (size_t i = 0; i < iq_data->num_samples; i++) {
+            float i_val = iq_data->data[i * 2] * 32767.0f;     // I component
+            float q_val = iq_data->data[i * 2 + 1] * 32767.0f; // Q component
+
+            // Clamp to valid range
+            if (i_val > 32767.0f) i_val = 32767.0f;
+            if (i_val < -32768.0f) i_val = -32768.0f;
+            if (q_val > 32767.0f) q_val = 32767.0f;
+            if (q_val < -32768.0f) q_val = -32768.0f;
+
+            int16_t *buffer_16 = (int16_t *)buffer;
+            buffer_16[i * 2] = (int16_t)i_val;         // I as 16-bit signed
+            buffer_16[i * 2 + 1] = (int16_t)q_val;     // Q as 16-bit signed
+        }
+    }
+
+    // Write the raw data to file
+    size_t bytes_written = fwrite(buffer, 1, total_raw_bytes, file);
+    if (bytes_written == total_raw_bytes) {
+        success = true;
+    }
+
+    free(buffer);
+    fclose(file);
+    return success;
+}
+
 size_t iq_get_file_size(const char *filename) {
     if (!filename) {
         return 0;

@@ -3,7 +3,6 @@
  *
  * Purpose: FM (Frequency Modulation) demodulation with stereo support
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This module provides professional FM demodulation capabilities including:
  * - FM discriminator using phase differentiation

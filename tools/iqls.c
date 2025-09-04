@@ -3,7 +3,6 @@
  *
  * Purpose: Professional spectrum analysis with waterfall visualization
  * Author: IQ Lab Development Team
- * Date: 2025
  *
  * This tool provides comprehensive spectral analysis capabilities for IQ signals,
  * generating both static spectrum plots and dynamic waterfall displays. It uses

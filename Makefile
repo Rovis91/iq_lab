@@ -27,6 +27,11 @@ DEMOD_OBJS = build/fm.o \
              build/wave.o \
              build/agc.o
 
+# Detection objects
+DETECT_OBJS = build/cfar_os.o \
+              build/cluster.o \
+              build/features.o
+
 # Converter objects
 CONVERTER_OBJS = build/converter.o \
                  build/wav_converter.o \
@@ -34,7 +39,7 @@ CONVERTER_OBJS = build/converter.o \
                  build/file_utils.o
 
 # Tool executables
-TOOLS = iqinfo file_converter generate_images iqls iqcut iqdemod-fm iqdemod-am iqdemod-ssb
+TOOLS = iqinfo file_converter generate_images iqls iqcut iqdemod-fm iqdemod-am iqdemod-ssb iqdetect
 
 # Default target
 all: dirs $(TOOLS)
@@ -95,6 +100,16 @@ build/wave.o: src/demod/wave.c src/demod/wave.h
 build/agc.o: src/demod/agc.c src/demod/agc.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Detection compilation
+build/cfar_os.o: src/detect/cfar_os.c src/detect/cfar_os.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/cluster.o: src/detect/cluster.c src/detect/cluster.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/features.o: src/detect/features.c src/detect/features.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # Core library compilation (additional)
 build/resample.o: src/iq_core/resample.c src/iq_core/resample.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -126,9 +141,47 @@ iqdemod-am: tools/iqdemod-am.c $(CORE_OBJS) $(DEMOD_OBJS)
 iqdemod-ssb: tools/iqdemod-ssb.c $(CORE_OBJS) $(DEMOD_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
 
+# iqdetect object compilation
+build/iqdetect.o: tools/iqdetect.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# iqdetect tool
+iqdetect: tools/iqdetect.c $(CORE_OBJS) $(DETECT_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
 # Integration tests
+tests/integration/test_iqdetect_basic.exe: tests/integration/test_iqdetect_basic.c build/io_iq.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+tests/integration/test_iqdetect_comprehensive.exe: tests/integration/test_iqdetect_comprehensive.c build/io_iq.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+tests/integration/test_iqdetect_accuracy.exe: tests/integration/test_iqdetect_accuracy.c build/io_iq.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+tests/integration/test_iqdetect_debug.exe: tests/integration/test_iqdetect_debug.c build/io_iq.o build/fft.o build/cfar_os.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+tests/integration/test_iqdetect_acceptance.exe: tests/integration/test_iqdetect_acceptance.c build/io_iq.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
 tests/integration/test_iqls_spectrum.exe: tests/integration/test_iqls_spectrum.c iqls
 	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+
+test-iqdetect: tests/integration/test_iqdetect_basic.exe
+	./tests/integration/test_iqdetect_basic.exe
+
+test-iqdetect-comprehensive: tests/integration/test_iqdetect_comprehensive.exe
+	./tests/integration/test_iqdetect_comprehensive.exe
+
+test-iqdetect-accuracy: tests/integration/test_iqdetect_accuracy.exe
+	./tests/integration/test_iqdetect_accuracy.exe
+
+test-iqdetect-debug: tests/integration/test_iqdetect_debug.exe
+	./tests/integration/test_iqdetect_debug.exe
+
+test-iqdetect-acceptance: tests/integration/test_iqdetect_acceptance.exe
+	./tests/integration/test_iqdetect_acceptance.exe
 
 test-iqls: tests/integration/test_iqls_spectrum.exe
 	./tests/integration/test_iqls_spectrum.exe
@@ -195,6 +248,25 @@ tests/integration/test_iqdemod_ssb_acceptance.exe: tests/integration/test_iqdemo
 
 test-iqdemod-ssb-acceptance: tests/integration/test_iqdemod_ssb_acceptance.exe
 	./tests/integration/test_iqdemod_ssb_acceptance.exe
+
+# Unit test compilation
+tests/unit/test_cfar_os.exe: tests/unit/test_cfar_os.c $(DETECT_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+test-cfar-os: tests/unit/test_cfar_os.exe
+	./tests/unit/test_cfar_os.exe
+
+tests/unit/test_cluster.exe: tests/unit/test_cluster.c $(DETECT_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+test-cluster: tests/unit/test_cluster.exe
+	./tests/unit/test_cluster.exe
+
+tests/unit/test_features.exe: tests/unit/test_features.c $(DETECT_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+test-features: tests/unit/test_features.exe
+	./tests/unit/test_features.exe
 
 # Clean build artifacts
 clean:
