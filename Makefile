@@ -6,7 +6,7 @@ CFLAGS=-std=c11 -Wall -Wextra -Werror -O2 -g
 LDFLAGS=
 
 # Source directories
-SRC_DIRS = src/iq_core src/viz src/demod src/detect src/chan src/jobs
+SRC_DIRS = src/iq_core src/viz src/demod src/detect src/chan src/jobs src/ui
 BUILD_DIR = build
 
 # Core library objects (IQ-only)
@@ -40,6 +40,9 @@ CHAN_OBJS = build/pfb.o \
 JOB_OBJS = build/yaml_parse.o \
            build/pipeline.o
 
+# UI objects
+UI_OBJS = build/ui.o
+
 # Converter objects
 CONVERTER_OBJS = build/converter.o \
                  build/wav_converter.o \
@@ -47,7 +50,7 @@ CONVERTER_OBJS = build/converter.o \
                  build/file_utils.o
 
 # Tool executables
-TOOLS = iqinfo file_converter generate_images iqls iqcut iqdemod-fm iqdemod-am iqdemod-ssb iqdetect iqchan iqjob
+TOOLS = iqinfo file_converter generate_images iqls iqcut iqdemod-fm iqdemod-am iqdemod-ssb iqdetect iqchan iqjob iq_ui
 
 # Default target
 all: dirs $(TOOLS)
@@ -132,6 +135,10 @@ build/yaml_parse.o: src/jobs/yaml_parse.c src/jobs/yaml_parse.h
 build/pipeline.o: src/jobs/pipeline.c src/jobs/pipeline.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# UI compilation
+build/ui.o: src/ui/ui.c src/ui/ui.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # Core library compilation (additional)
 build/resample.o: src/iq_core/resample.c src/iq_core/resample.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -178,6 +185,10 @@ iqchan: tools/iqchan.c $(CORE_OBJS) $(CHAN_OBJS)
 # iqjob tool
 iqjob: tools/iqjob.c $(CORE_OBJS) $(JOB_OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lm
+
+# iq_ui tool (Windows only)
+iq_ui: tools/iq_ui.c $(UI_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -lgdi32 -luser32 -lkernel32
 
 # Integration tests
 tests/integration/test_iqdetect_basic.exe: tests/integration/test_iqdetect_basic.c build/io_iq.o

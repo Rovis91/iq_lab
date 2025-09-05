@@ -31,8 +31,8 @@ IQ Lab processes raw IQ data files to produce auditable SIGINT artifacts:
 
 #### Optional Prerequisites (for KiwiSDR recording)
 - **Python 3.6+** (for KiwiSDR recording tool only)
-- **mod_pywebsocket** (for KiwiSDR WebSocket connections)
-- **PyYAML** (optional, for advanced KiwiSDR configuration)
+- **[mod_pywebsocket](https://github.com/google/mod_pywebsocket)** (for KiwiSDR WebSocket connections)
+- **[PyYAML](https://github.com/yaml/pyyaml)** (optional, for advanced KiwiSDR configuration)
 
 ### Build
 ```bash
@@ -84,6 +84,9 @@ iq_lab/
 ## 🛠️ Tools
 
 ### ✅ **Phase 0-4 Complete - All Core Tools Available**
+
+### 🎨 **GUI Tools (Experimental)**
+- **`iq_ui`** - Interactive UI built with [Clay](https://github.com/nicbarker/clay) for real-time spectrum analysis and signal processing
 
 ### Core Analysis Tools
 - **`iqinfo`** - IQ file statistics, metadata analysis, and signal characterization
@@ -311,6 +314,22 @@ IQ Lab welcomes contributions! The project follows these principles:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+IQ Lab builds upon excellent open-source projects:
+
+### Core Dependencies
+- **[Clay](https://github.com/nicbarker/clay)** - High-performance UI layout library used for the interactive GUI
+- **[SigMF](https://github.com/gnuradio/SigMF)** - Standard for RF metadata and signal interchange
+
+### Optional Components
+- **[kiwiclient](https://github.com/jks-prv/kiwiclient)** - KiwiSDR client for IQ data recording
+- **[mod_pywebsocket](https://github.com/google/mod_pywebsocket)** - WebSocket support for KiwiSDR connections
+- **[PyYAML](https://github.com/yaml/pyyaml)** - YAML configuration parsing
+
+### WebSDR API
+The KiwiSDR recording functionality uses the WebSDR API protocol as implemented by the KiwiSDR project at [websdr.org](http://websdr.org/).
 
 ## 🇫🇷 Made in France
 
